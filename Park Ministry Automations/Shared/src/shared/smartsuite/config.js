@@ -22,6 +22,21 @@ const PARK_MINISTRY_SMARTSUITE = {
         eventId: "s1ded883e9",
       },
     },
+    locations: {
+      applicationId: "6904e858d0b388387f0fa49e",
+      tableId: "6904e858d0b388387f0fa49e",
+      fields: {
+        title: "title",
+        venueName: "s93a499ca0",
+        providerName: "sa938cb8ba",
+        locationStatus: "status",
+        parkingLocationId: "autonumber",
+        buyCost: "seadbead5d",
+        sellPrice: "sgfp8sul",
+        distanceFromVenue: "s06ff46552",
+        distanceUnit: "se71448816",
+      },
+    },
     inventory: {
       applicationId: "6904e82ac51862fbb5108850",
       reviewApplicationId: "690dffc401ee8baa3ac79394",
@@ -67,9 +82,16 @@ const INVENTORY_SMARTSUITE = {
   fields: PARK_MINISTRY_SMARTSUITE.applications.inventory.fields,
 };
 
+const LOCATIONS_SMARTSUITE = {
+  applicationId: PARK_MINISTRY_SMARTSUITE.applications.locations.applicationId,
+  tableId: PARK_MINISTRY_SMARTSUITE.applications.locations.tableId,
+  fields: PARK_MINISTRY_SMARTSUITE.applications.locations.fields,
+};
+
 module.exports = {
   PARK_MINISTRY_SMARTSUITE,
   BUYING_SMARTSUITE,
   SMARTSUITE: BUYING_SMARTSUITE,
   INVENTORY_SMARTSUITE,
+  LOCATIONS_SMARTSUITE,
 };

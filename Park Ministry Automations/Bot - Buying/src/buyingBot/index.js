@@ -13,6 +13,7 @@ const {
   buildProviderExecutionPlans,
   buildSharedExecutionStages,
 } = require("./providerPlanning");
+const { getActiveBuyingProviderKeys } = require("./config");
 
 loadEnv();
 
@@ -36,7 +37,8 @@ async function runBuyingBot() {
   const { startDate, endDate } = await askDateRange();
   const { records: rawRecords, source } = await fetchBuying(dataPath, { startDate, endDate });
   const normalizedRecords = normalizeBuyingRecords(rawRecords);
-  const recordsToBuy = filterBuying(normalizedRecords, startDate, endDate);
+  const activeProviderKeys = getActiveBuyingProviderKeys();
+  const recordsToBuy = filterBuying(normalizedRecords, startDate, endDate, { activeProviderKeys });
   const sharedExecutionStages = await buildSharedExecutionStages(recordsToBuy);
   const providerExecutionPlans = buildProviderExecutionPlans(recordsToBuy);
   const result = buildOutput(
@@ -53,6 +55,7 @@ async function runBuyingBot() {
   console.log(`Generated ${outputPath}`);
   console.log(`Source: ${source}`);
   console.log(`Recommended purchases: ${recordsToBuy.length}`);
+  console.log(`Active providers: ${activeProviderKeys.join(", ") || "none"}`);
   console.log(`Shared stages: ${sharedExecutionStages.map((stage) => stage.stage).join(", ") || "none"}`);
   console.log(`Providers in scope: ${providerExecutionPlans.map((plan) => plan.provider).join(", ") || "none"}`);
 }
