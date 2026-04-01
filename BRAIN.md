@@ -40,7 +40,6 @@ Current top-level structure inside `Park Ministry Automations/`:
 - `Bot - Buying/`
 - `Bot - Listing/`
 - `Ops - Sales Tracking/`
-- `Ops - Fulfillment Integration/`
 - `Shared/`
 - `Workspace/`
 

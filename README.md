@@ -14,7 +14,6 @@ This workspace contains internal automation projects plus a shared high-level br
     - `Bot - Buying`
     - `Bot - Listing`
     - `Ops - Sales Tracking`
-    - `Ops - Fulfillment Integration`
     - `Shared`
     - `Workspace`
 
@@ -52,7 +51,6 @@ Current Park Ministry notes:
 - commands are intended to be copied and run from the `Task Automations/` root via the `park:*` scripts
 - root fulfillment commands now run from `Park Ministry Live/`
 - `ListingApp` remains a self-contained app workspace under `Bot - Listing`
-- the fulfillment copy inside `Park Ministry Automations/` is now legacy reference only
 - fulfillment automation remains active for supported StubHub API cases, while TV / legacy no-`ticketId` cases remain manual
 - the Way checkout flow was recently hardened for:
   - branded autocomplete suggestions that still contain the correct address

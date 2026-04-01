@@ -7,13 +7,11 @@ Top-level modules:
 - `Bot - Buying/`
 - `Bot - Listing/`
 - `Ops - Sales Tracking/`
-- `Ops - Fulfillment Integration/`
 - `Shared/`
 
 Important note:
 
 - active fulfillment now lives in `../Park Ministry Live/`
-- the fulfillment copy in this folder is legacy reference only
 
 Support infrastructure:
 
@@ -30,14 +28,10 @@ Support infrastructure:
   - listing workflow and app assets
 - `Ops - Sales Tracking/`
   - sales reconciliation workflow
-- `Ops - Fulfillment Integration/`
-  - legacy local fulfillment copy retained for reference
 - `Shared/`
   - shared SmartSuite, StubHub, record, and provider helpers
 - `Workspace/`
   - workspace-level bootstrap helpers only
-- `Ops - Fulfillment Integration/vendor/`
-  - vendored Python dependencies used by the legacy local fulfillment copy
 
 Current status:
 
@@ -147,7 +141,6 @@ If SmartSuite credentials are missing, review module-specific runtime/data notes
 - `Bot - Buying/runtime/outputs/`
 - `Bot - Listing/runtime/outputs/`
 - `Ops - Sales Tracking/runtime/outputs/`
-- `Ops - Fulfillment Integration/runtime/outputs/`
 
 ## Operational Notes
 
