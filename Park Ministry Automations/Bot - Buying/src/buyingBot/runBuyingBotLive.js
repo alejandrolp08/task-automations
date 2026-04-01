@@ -870,7 +870,7 @@ async function runBuyingBotLive() {
     console.log(`Eligible TBD/TBH events -> ${tbdEligibleCount}`);
   }
 
-  if (problematicPurchases.length > 0) {
+  if (purchaseResults.length > 0) {
     const grouped = new Map();
     for (const item of purchaseResults) {
       const bucket = mapSummaryBucket(getEffectiveSummaryStatus(item));
