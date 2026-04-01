@@ -44,6 +44,10 @@ Current top-level structure inside `Park Ministry Automations/`:
 - `Shared/`
 - `Workspace/`
 
+Additional shared live project at the workspace root:
+
+- `Park Ministry Live/`
+
 Supporting files at the workspace root:
 
 - `package.json`
@@ -143,10 +147,12 @@ Current project stage:
 Recent structural and runtime confirmations:
 
 - `Bot - Buying`, `Bot - Listing`, `Ops - Sales Tracking`, and `Ops - Fulfillment Integration` now run from the reorganized module structure
+- `Park Ministry Live/` is now the active source of truth for fulfillment and subtree publishing
 - `ListingApp` remains intentionally self-contained inside `Bot - Listing/app/ListingApp`
 - `Shared/` continues to hold reusable business logic used by both buying and listing flows
 - `Workspace/` continues to hold only workspace bootstrap and runtime-path helpers
 - `Task Automations/package.json` is now the main operator launch surface through `park:*` scripts
+- root `park:fulfillment:*` commands now point to `Park Ministry Live/`
 - the workspace is now tracked in the private GitHub repository:
   - `https://github.com/alejandrolp08/task-automations`
 

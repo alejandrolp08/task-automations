@@ -1,6 +1,6 @@
 # Park Ministry Live
 
-This folder is the shared live subset of Park Ministry that can later be published to its own private GitHub repository with `git subtree`.
+This folder is the shared live subset of Park Ministry that is published to its own private GitHub repository with `git subtree`.
 
 Current scope:
 
@@ -60,12 +60,14 @@ Then fill in:
 
 ## Publishing With Subtree
 
-This folder is meant to be published from the internal workspace repo using `git subtree`.
+This folder is the active source of truth for fulfillment. Production and VPS-facing fulfillment changes should be made here, not in the older copy under `Park Ministry Automations/`.
+
+This folder is published from the internal workspace repo using `git subtree`.
 
 Example later:
 
 ```bash
-git subtree push --prefix "Park Ministry Live" origin-park-live main
+git subtree push --prefix "Park Ministry Live" park-live main
 ```
 
 ## Rule

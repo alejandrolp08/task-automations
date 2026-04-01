@@ -1,6 +1,6 @@
 # Task Automations Workspace
 
-This workspace contains two independent project areas plus a shared high-level brain.
+This workspace contains internal automation projects plus a shared high-level brain.
 
 ## Folders
 
@@ -18,15 +18,20 @@ This workspace contains two independent project areas plus a shared high-level b
     - `Shared`
     - `Workspace`
 
+- `Park Ministry Live/`
+  - shared and deployable Park Ministry subset
+  - current source of truth for fulfillment
+
 - `BRAIN.md`
   - shared high-level operational brain across the automation projects
   - stays at the workspace root on purpose
 
 ## Current Direction
 
-Park Ministry work should happen only inside:
+Park Ministry work should happen inside:
 
 - `Park Ministry Automations/`
+- `Park Ministry Live/`
 
 TCG work should stay isolated inside:
 
@@ -39,14 +44,16 @@ Current Park Ministry infrastructure split:
 - `Workspace/`
   - bootstrap helpers and runtime path wiring
 
-This keeps unrelated projects separated and leaves Park Ministry ready for a single-repo GitHub/VPS setup.
+This keeps unrelated projects separated while allowing only the production-safe Park Ministry subset to be published separately.
 
 Current Park Ministry notes:
 
 - `Bot - Buying` and `Bot - Listing` now run from the new module structure
 - commands are intended to be copied and run from the `Task Automations/` root via the `park:*` scripts
+- root fulfillment commands now run from `Park Ministry Live/`
 - `ListingApp` remains a self-contained app workspace under `Bot - Listing`
-- fulfillment automation is active for supported StubHub API cases, while TV / legacy no-`ticketId` cases remain manual
+- the fulfillment copy inside `Park Ministry Automations/` is now legacy reference only
+- fulfillment automation remains active for supported StubHub API cases, while TV / legacy no-`ticketId` cases remain manual
 - the Way checkout flow was recently hardened for:
   - branded autocomplete suggestions that still contain the correct address
   - more tolerant time-picker container detection during check-in / checkout selection

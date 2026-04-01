@@ -10,6 +10,11 @@ Top-level modules:
 - `Ops - Fulfillment Integration/`
 - `Shared/`
 
+Important note:
+
+- active fulfillment now lives in `../Park Ministry Live/`
+- the fulfillment copy in this folder is legacy reference only
+
 Support infrastructure:
 
 - `Workspace/`
@@ -26,13 +31,13 @@ Support infrastructure:
 - `Ops - Sales Tracking/`
   - sales reconciliation workflow
 - `Ops - Fulfillment Integration/`
-  - PDF validation and StubHub fulfillment workflow
+  - legacy local fulfillment copy retained for reference
 - `Shared/`
   - shared SmartSuite, StubHub, record, and provider helpers
 - `Workspace/`
   - workspace-level bootstrap helpers only
 - `Ops - Fulfillment Integration/vendor/`
-  - vendored Python dependencies used by PDF extraction
+  - vendored Python dependencies used by the legacy local fulfillment copy
 
 Current status:
 
@@ -41,7 +46,7 @@ Current status:
 - `Bot - Buying` now uses a more tolerant time-picker container fallback for Way check-in / checkout selection
 - `Bot - Listing` runner starts and writes outputs correctly from the new module layout
 - `ListingApp` remains a self-contained distribution workspace inside `Bot - Listing/app/ListingApp`
-- `Ops - Fulfillment Integration` is active for supported StubHub API cases
+- active fulfillment now runs from `../Park Ministry Live/`
 
 ## Git And Repo Workflow
 

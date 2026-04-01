@@ -1,6 +1,8 @@
 Ops - Fulfillment Integration scripts
 
-This folder contains the active Park Ministry fulfillment automation for sold parking PDFs.
+Legacy local copy. The active fulfillment scripts now live in `../../../../Park Ministry Live/Ops - Fulfillment Integration/src/fulfillmentIntegration/`.
+
+This folder contains the legacy local Park Ministry fulfillment automation copy for sold parking PDFs.
 
 Current runtime direction:
 

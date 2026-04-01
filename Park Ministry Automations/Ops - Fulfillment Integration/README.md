@@ -1,5 +1,7 @@
 # Ops - Fulfillment Integration
 
+Legacy local copy. Active fulfillment development and deployment now live in `../../Park Ministry Live/Ops - Fulfillment Integration/`.
+
 This module owns PDF validation and StubHub fulfillment automation.
 
 Structure:
