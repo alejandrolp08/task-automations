@@ -43,6 +43,19 @@ Current status:
 - `ListingApp` remains a self-contained distribution workspace inside `Bot - Listing/app/ListingApp`
 - `Ops - Fulfillment Integration` is active for supported StubHub API cases
 
+## Git And Repo Workflow
+
+This module now lives inside the root private repository:
+
+- `https://github.com/alejandrolp08/task-automations`
+
+Operational rule:
+
+- Git commands should normally be run from the workspace root:
+  - `/Users/alejandroleiva/Documents/Documentos Trabajo/Task Automations`
+- `main` should remain stable
+- use a new branch first for medium or large changes to buying, listing, sales, fulfillment, or shared logic
+
 ## Run Locally
 
 ### Bot - Buying

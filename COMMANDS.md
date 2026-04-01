@@ -67,6 +67,31 @@ FULFILLMENT_AUTOMATION_LIMIT=25 npm run park:fulfillment:limited
 - `park:fulfillment:limited`:
   full fulfillment run with a manual batch limit
 
+## Git Workflow
+
+Primary repository:
+
+- `https://github.com/alejandrolp08/task-automations`
+
+Create a branch for medium or large changes:
+
+```bash
+cd "/Users/alejandroleiva/Documents/Documentos Trabajo/Task Automations"
+git checkout -b improve/buying-bot
+git add .
+git commit -m "Describe the change"
+git push -u origin improve/buying-bot
+```
+
+Small direct update on `main`:
+
+```bash
+cd "/Users/alejandroleiva/Documents/Documentos Trabajo/Task Automations"
+git add .
+git commit -m "Describe the change"
+git push
+```
+
 ## Current Operational Notes
 
 - all commands in this file are meant to be run from:

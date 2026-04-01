@@ -147,6 +147,44 @@ Recent structural and runtime confirmations:
 - `Shared/` continues to hold reusable business logic used by both buying and listing flows
 - `Workspace/` continues to hold only workspace bootstrap and runtime-path helpers
 - `Task Automations/package.json` is now the main operator launch surface through `park:*` scripts
+- the workspace is now tracked in the private GitHub repository:
+  - `https://github.com/alejandrolp08/task-automations`
+
+## Git Workflow
+
+Current source-control rule:
+
+- the root Git repository is `Task Automations/`
+- normal Git work should start from:
+  - `/Users/alejandroleiva/Documents/Documentos Trabajo/Task Automations`
+
+Current branch policy:
+
+- `main` is the stable branch
+- medium or large changes to bots, scripts, shared logic, or workflows should start from a new branch
+- very small documentation-only updates may still go directly to `main`
+
+Standard branch workflow:
+
+```bash
+git checkout -b improve/buying-bot
+git add .
+git commit -m "Describe the change"
+git push -u origin improve/buying-bot
+```
+
+Standard direct workflow on `main`:
+
+```bash
+git add .
+git commit -m "Describe the change"
+git push
+```
+
+Operational rule:
+
+- `.env` files remain local-only and must not be committed
+- `.env.example` files should be maintained as copy-ready templates for future machines and VPS setup
 
 Current priority provider:
 

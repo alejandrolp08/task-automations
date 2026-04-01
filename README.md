@@ -50,3 +50,34 @@ Current Park Ministry notes:
 - the Way checkout flow was recently hardened for:
   - branded autocomplete suggestions that still contain the correct address
   - more tolerant time-picker container detection during check-in / checkout selection
+
+## GitHub Workflow
+
+Private repository:
+
+- `https://github.com/alejandrolp08/task-automations`
+
+Working rules from now on:
+
+- run Git commands from:
+  - `/Users/alejandroleiva/Documents/Documentos Trabajo/Task Automations`
+- keep `main` as the stable branch
+- create a new branch first for medium or large bot / script changes
+- direct commits to `main` are acceptable only for very small controlled updates
+
+Branch workflow:
+
+```bash
+git checkout -b improve/buying-bot
+git add .
+git commit -m "Describe the change"
+git push -u origin improve/buying-bot
+```
+
+Direct workflow on `main`:
+
+```bash
+git add .
+git commit -m "Describe the change"
+git push
+```
