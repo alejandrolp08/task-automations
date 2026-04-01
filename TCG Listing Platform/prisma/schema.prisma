@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Game {
+  POKEMON
+}
+
+enum IntakeMode {
+  VIDEO
+  IMAGES
+}
+
+enum BatchStatus {
+  DRAFT
+  PROCESSING
+  REVIEW
+  READY
+  EXPORTED
+}
+
+enum UploadStatus {
+  UPLOADED
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
+enum DetectionStatus {
+  MATCHED
+  NEEDS_REVIEW
+  REJECTED
+}
+
+enum ReviewState {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+model Batch {
+  id           String      @id @default(cuid())
+  name         String
+  sellerLabel  String
+  game         Game        @default(POKEMON)
+  intakeMode   IntakeMode
+  status       BatchStatus @default(DRAFT)
+  itemCount    Int         @default(0)
+  reviewCount  Int         @default(0)
+  exportReady  Boolean     @default(false)
+  location     String?
+  shippingType String?
+  shippingCost String?
+  returnsAcceptedOption String?
+  returnsWithinOption String?
+  refundOption String?
+  shippingCostPaidByOption String?
+  dispatchTimeMax Int?
+  cardConditionDescriptor String?
+  descriptionTemplate String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  uploads      Upload[]
+  detections   Detection[]
+  reviewItems  ReviewItem[]
+  exportRuns   ExportRun[]
+}
+
+model Upload {
+  id              String       @id @default(cuid())
+  batchId         String
+  kind            IntakeMode
+  fileName        String
+  storageKey      String?
+  status          UploadStatus @default(UPLOADED)
+  durationSeconds Int?
+  imageCount      Int?
+  uploadedAt      DateTime     @default(now())
+  batch           Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  detections      Detection[]
+
+  @@index([batchId])
+}
+
+model Detection {
+  id              String          @id @default(cuid())
+  batchId         String
+  uploadId        String?
+  sourceLabel     String
+  suggestedCardId String?
+  cardName        String?
+  setName         String?
+  cardNumber      String?
+  rarity          String?
+  confidence      Float
+  status          DetectionStatus @default(NEEDS_REVIEW)
+  notes           String?
+  titleOverride   String?
+  priceOverride   String?
+  quantityOverride Int?
+  conditionOverride String?
+  excludeFromExport Boolean      @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  batch           Batch           @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  upload          Upload?         @relation(fields: [uploadId], references: [id], onDelete: SetNull)
+  suggestedCard   CatalogCard?    @relation(fields: [suggestedCardId], references: [id], onDelete: SetNull)
+  reviewItems     ReviewItem[]
+
+  @@index([batchId])
+  @@index([uploadId])
+  @@index([suggestedCardId])
+}
+
+model ReviewItem {
+  id               String       @id @default(cuid())
+  batchId          String
+  detectionId      String
+  suggestedMatch   String
+  alternateMatches String
+  reason           String
+  state            ReviewState  @default(OPEN)
+  resolvedCardId   String?
+  resolvedAt       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  batch            Batch        @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  detection        Detection    @relation(fields: [detectionId], references: [id], onDelete: Cascade)
+  resolvedCard      CatalogCard? @relation("ResolvedCard", fields: [resolvedCardId], references: [id], onDelete: SetNull)
+
+  @@index([batchId])
+  @@index([detectionId])
+  @@index([resolvedCardId])
+}
+
+model CatalogSet {
+  id               String        @id @default(cuid())
+  externalSource   String
+  externalSetId    String        @unique
+  name             String
+  code             String?
+  series           String?
+  printedTotal     Int?
+  total            Int?
+  ptcgoCode        String?
+  releaseDate      String?
+  updatedAtSource  DateTime?
+  createdAt        DateTime      @default(now())
+  syncedAt         DateTime      @default(now())
+  cards            CatalogCard[]
+}
+
+model CatalogCard {
+  id               String        @id @default(cuid())
+  setId            String?
+  externalSource   String
+  externalCardId   String        @unique
+  name             String
+  normalizedName   String
+  setName          String
+  setCode          String?
+  cardNumber       String
+  rarity           String?
+  supertype        String?
+  subtypes         String?
+  imageSmallUrl    String?
+  imageLargeUrl    String?
+  imageHashFull    String?
+  imageHashCandidates String?
+  rawSourceJson    String?
+  updatedAtSource  DateTime?
+  createdAt        DateTime      @default(now())
+  syncedAt         DateTime      @default(now())
+  set              CatalogSet?   @relation(fields: [setId], references: [id], onDelete: SetNull)
+  suggestedIn      Detection[]
+  resolvedIn       ReviewItem[]  @relation("ResolvedCard")
+
+  @@index([setId])
+  @@index([name])
+  @@index([normalizedName])
+  @@index([setName, cardNumber])
+}
+
+model ExportRun {
+  id           String    @id @default(cuid())
+  batchId      String
+  format       String
+  status       String
+  filePath     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  batch        Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+}

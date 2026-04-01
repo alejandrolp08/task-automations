@@ -1,0 +1,46 @@
+.DS_Store
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Common build artifacts
+.next/
+dist/
+build/
+out/
+coverage/
+tmp/
+*.tsbuildinfo
+
+# Logs and temp files
+*.log
+*.pid
+*.tmp
+*.temp
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Runtime-generated outputs
+**/runtime/outputs/
+**/runtime/screenshots/
+**/runtime/sessions/
+
+# Park Ministry generated app artifacts
+Park Ministry Automations/Bot - Listing/app/ListingApp/dist/
+Park Ministry Automations/Bot - Listing/app/ListingApp/Deliverables/
+Park Ministry Automations/Bot - Listing/app/ListingApp/outputs/
+
+# Local debug artifacts
+.codex-*.html
+
+# TCG local exports and model weights
+TCG Listing Platform/data/exports/
+TCG Listing Platform/yolov8s-worldv2.pt

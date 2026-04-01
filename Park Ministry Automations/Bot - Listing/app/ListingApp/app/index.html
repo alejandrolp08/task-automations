@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ListingApp</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="hero-brand">
+          <img class="brand-mark" src="../assets/logo-app-rounded.png" alt="Park Ministry" />
+          <div class="hero-copy">
+            <p class="eyebrow">Task Automations</p>
+            <h1>ListingApp</h1>
+            <p class="subtitle">Run the Bot - Listing, generate the ReachPro CSV, and review unresolved events in one place.</p>
+            <div class="license-strip">
+              <span id="licenseBadge" class="license-badge">Checking license</span>
+              <span id="licenseDetail" class="license-detail"></span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button id="openOutputs" class="ghost">Open Outputs Folder</button>
+          <button id="openCsv" class="ghost">Open Latest CSV</button>
+        </div>
+      </section>
+
+      <section class="panel form-panel">
+        <div class="panel-head">
+          <h2>Run Bot - Listing</h2>
+          <p>Use the same date range you would normally enter in terminal.</p>
+        </div>
+        <form id="runForm" class="date-form">
+          <label>
+            <span>Start Date</span>
+            <input id="startDate" name="startDate" type="date" required />
+          </label>
+          <label>
+            <span>End Date</span>
+            <input id="endDate" name="endDate" type="date" required />
+          </label>
+          <button id="runButton" type="submit">Run Bot - Listing</button>
+        </form>
+        <p id="statusLine" class="status-line idle">Ready.</p>
+      </section>
+
+      <section class="grid">
+        <section class="panel metrics-panel">
+          <div class="panel-head">
+            <h2>Run Summary</h2>
+            <p>Latest JSON summary rendered after each run.</p>
+          </div>
+          <div id="metrics" class="metrics empty">
+            <div class="metric-card"><span>Event groups</span><strong>-</strong></div>
+            <div class="metric-card"><span>Eligible passes</span><strong>-</strong></div>
+            <div class="metric-card"><span>Listing ready</span><strong>-</strong></div>
+            <div class="metric-card"><span>Blocked by event</span><strong>-</strong></div>
+          </div>
+        </section>
+
+        <section class="panel review-panel">
+          <div class="panel-head">
+            <h2>Needs Review</h2>
+            <p>Only unresolved events are shown here.</p>
+          </div>
+          <div id="reviewState" class="empty-state">No run yet.</div>
+          <div id="blockedList" class="blocked-list"></div>
+        </section>
+      </section>
+
+      <section class="panel logs-panel">
+        <div class="panel-head">
+          <h2>Advanced</h2>
+          <p>Extra tools and detailed run logs.</p>
+        </div>
+        <details class="advanced-panel">
+          <summary>Run log</summary>
+          <pre id="logOutput" class="log-output">No run yet.</pre>
+        </details>
+        <details class="advanced-panel">
+          <summary>Advanced fallback</summary>
+          <p class="advanced-copy">
+            Use this only when the Event ID was manually confirmed in SmartSuite and the normal run still does not recognize it.
+          </p>
+          <button id="runForceButton" type="button" class="ghost subtle-action">Run with Force Event ID fallback</button>
+        </details>
+        <details class="advanced-panel">
+          <summary>Marketplace fee %</summary>
+          <p class="advanced-copy">
+            Consider adjusting this percentage if the marketplace fee changes. This only affects the generated ReachPro template output.
+          </p>
+          <label class="advanced-field">
+            <span>Marketplace fee percent</span>
+            <div class="percent-input">
+              <input id="marketplaceFeePercent" type="number" min="0" max="99" step="0.1" value="9" />
+              <span class="percent-suffix">%</span>
+            </div>
+          </label>
+          <div class="fee-save-row">
+            <button id="saveFeeButton" type="button" class="ghost subtle-action">Save fee</button>
+            <span id="saveFeeStatus" class="save-fee-status" aria-live="polite"></span>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>

@@ -1,0 +1,306 @@
+[
+  {
+    "event_date": "2026-05-01",
+    "event": "Ty Myers",
+    "venue": "Orion Amphitheater",
+    "city_state": "Huntsville, AL",
+    "resolved_event_time": "19:30",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "Performer, venue, and date matched the expected event."
+    ]
+  },
+  {
+    "event_date": "2026-05-02",
+    "event": "Romeo Santos",
+    "venue": "Frost Bank Center",
+    "city_state": "San Antonio, TX",
+    "resolved_event_time": "20:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "Performer, venue, and date matched the expected event."
+    ]
+  },
+  {
+    "event_date": "2026-05-05",
+    "event": "Kid Cudi",
+    "venue": "Coca-Cola Ampitheater",
+    "city_state": "Birmingham, AL",
+    "resolved_event_time": "18:30",
+    "confidence": "medium",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "Venue match was treated flexibly because the SmartSuite venue contains a typo."
+    ]
+  },
+  {
+    "event_date": "2026-05-09",
+    "event": "Monster Jam",
+    "venue": "SNHU Arena",
+    "city_state": "Manchester, NH",
+    "resolved_event_time": "13:00",
+    "confidence": "high",
+    "source_used": "smartsuite_event_time_then_manual_validation",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "SmartSuite event time should take priority for this multi-show day.",
+      "Manual review confirmed this is the 1:00 PM show, not the later performance."
+    ]
+  },
+  {
+    "event_date": "2026-05-09",
+    "event": "Rob Thomas",
+    "venue": "Orion Amphitheater",
+    "city_state": "Huntsville, AL",
+    "resolved_event_time": "19:30",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "Performer, venue, and date matched the expected event."
+    ]
+  },
+  {
+    "event_date": "2026-05-15",
+    "event": "Nate Bargatze",
+    "venue": "MVP Arena",
+    "city_state": "Albany, NY",
+    "resolved_event_time": "19:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time."
+    ]
+  },
+  {
+    "event_date": "2026-05-16",
+    "event": "Shinedown",
+    "venue": "Kohl Center",
+    "city_state": "Madison, WI",
+    "resolved_event_time": "19:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time."
+    ]
+  },
+  {
+    "event_date": "2026-05-18",
+    "event": "WWE Monday Night RAW",
+    "venue": "First Horizon Coliseum",
+    "city_state": "Greensboro, NC",
+    "resolved_event_time": "19:30",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "This event can also be reached directly when a StubHub Event ID is available."
+    ]
+  },
+  {
+    "event_date": "2026-05-22",
+    "event": "Sting",
+    "venue": "Filene Center",
+    "city_state": "Vienna, VA",
+    "resolved_event_time": "20:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time."
+    ]
+  },
+  {
+    "event_date": "2026-05-23",
+    "event": "The Black Crowes",
+    "venue": "Ameris Bank Amphitheatre",
+    "city_state": "Alpharetta, GA",
+    "resolved_event_time": "18:30",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time."
+    ]
+  },
+  {
+    "event_date": "2026-05-23",
+    "event": "We Them One's",
+    "venue": "The Theatre at Resorts World Las Vegas",
+    "city_state": "Las Vegas, NV",
+    "resolved_event_time": "20:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time."
+    ]
+  },
+  {
+    "event_date": "2026-05-24",
+    "event": "Patriotic Festival",
+    "venue": "Scope Arena",
+    "city_state": "Norfolk, VA",
+    "resolved_event_time": "19:00",
+    "confidence": "medium",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "The selected result corresponded to the main scheduled festival performance for that date."
+    ]
+  },
+  {
+    "event_date": "2026-05-28",
+    "event": "Journey",
+    "venue": "John Paul Jones Arena",
+    "city_state": "Charlottesville, VA",
+    "resolved_event_time": "19:30",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "Conflicting third-party schedule noise was ignored in favor of the primary event listing."
+    ]
+  },
+  {
+    "event_date": "2026-05-30",
+    "event": "Bruno Mars",
+    "venue": "Rogers Stadium",
+    "city_state": "Toronto, Canada",
+    "resolved_event_time": "19:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time."
+    ]
+  },
+  {
+    "event_date": "2026-05-31",
+    "event": "Matt Mathews",
+    "venue": "Brandon Amphitheatre",
+    "city_state": "Brandon, MS",
+    "resolved_event_time": "19:30",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time."
+    ]
+  },
+  {
+    "event_date": "2026-05-23",
+    "event": "Machine Gun Kelly",
+    "venue": "Cynthia Woods Mitchell Pavilion",
+    "city_state": "The Woodlands, TX",
+    "resolved_event_time": "19:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "Performer, venue, and date matched the expected event."
+    ]
+  },
+  {
+    "event_date": "2026-05-04",
+    "event": "Netflix is a Joke",
+    "venue": "Hollywood Bowl",
+    "city_state": "Los Angeles, CA",
+    "resolved_event_time": "20:00",
+    "confidence": "medium",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time from the venue schedule.",
+      "The SmartSuite event name is generic, so venue and date were used as the primary match signals."
+    ]
+  },
+  {
+    "event_date": "2026-05-07",
+    "event": "Netflix is a Joke",
+    "venue": "Hollywood Bowl",
+    "city_state": "Los Angeles, CA",
+    "resolved_event_time": "19:30",
+    "confidence": "medium",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time from the venue schedule.",
+      "The SmartSuite event name is generic, so venue and date were used as the primary match signals."
+    ]
+  },
+  {
+    "event_date": "2026-05-31",
+    "event": "The Black Crowes",
+    "venue": "MidFlorida Credit Union Amphitheater",
+    "city_state": "Tampa, FL",
+    "resolved_event_time": "18:30",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "event_status": "scheduled",
+    "status_last_verified_at": "2026-03-15",
+    "resolution_notes": [
+      "Manual web review validated the event time as 6:30 PM local.",
+      "Parking window should begin one hour before event start, so the correct Way window starts at 5:30 PM.",
+      "Performer, venue, and date matched the expected event."
+    ]
+  },
+  {
+    "event_date": "2026-05-09",
+    "event": "Beres Hammond",
+    "venue": "UBS Arena",
+    "city_state": "Elmont, NY",
+    "resolved_event_time": "20:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "Performer, venue, and date matched the expected event."
+    ]
+  },
+  {
+    "event_date": "2026-05-15",
+    "event": "Treaty Oak Revival",
+    "venue": "Coca-Cola Ampitheater",
+    "city_state": "Birmingham, AL",
+    "resolved_event_time": "19:00",
+    "confidence": "medium",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "The venue name in SmartSuite contains a typo, so the venue match was treated flexibly."
+    ]
+  },
+  {
+    "event_date": "2026-05-16",
+    "event": "MMA Ronda Rousey",
+    "venue": "Intuit Dome",
+    "city_state": "Inglewood, CA",
+    "resolved_event_time": "15:00",
+    "confidence": "high",
+    "source_used": "manual_web_validated",
+    "manual_review_required": false,
+    "resolution_notes": [
+      "Manual web review validated the event time.",
+      "Performer, venue, and date matched the expected event."
+    ]
+  }
+]

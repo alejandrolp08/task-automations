@@ -1,0 +1,2 @@
+VendorOrderId,VendorName,VendorEmailAddress,PurchaseDate,DeliveryType,TicketCount,CurrencyCode,InHandAt,Section,Row,SeatFrom,SeatTo,StubHubEventId,UnitCost,FaceValueCost,ExpectedValue,TaxPaid,AutoBroadcastCreatedListing,ListingNotes,PrivateNotes
+ID12345689,Acme Corporation,encrypted@email.com,3/19/2026 2:52:35 PM,InApp,50,USD,(Optional) 4/18/2026 2:52:35 PM,100,(Optional) A,(Optional) 1,(Optional) 10,153036185,220,(Optional) 110,(Optional) 110,(Optional) 10,(Optional) true,(Optional) Prime seating area,(Optional) Any private notes for this purchase order

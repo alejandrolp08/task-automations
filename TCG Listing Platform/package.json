@@ -1,0 +1,27 @@
+{
+  "name": "tcg-listing-platform",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npm run dev --workspace web",
+    "build": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npm run build --workspace web",
+    "lint": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npm run lint --workspace web",
+    "typecheck": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npm run typecheck --workspace web",
+    "db:generate": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" prisma generate",
+    "db:push": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" prisma db push",
+    "db:seed": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" node prisma/seed.js",
+    "db:init": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/manual-init.sql && sqlite3 prisma/dev.db < prisma/manual-init.sql",
+    "import:root-videos": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npx --yes tsx scripts/import-root-videos.ts",
+    "sync:pokemon-catalog": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" node scripts/sync-pokemon-catalog.mjs",
+    "catalog:backfill-hashes": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npx --yes tsx scripts/backfill-catalog-hashes.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "6.5.0"
+  },
+  "devDependencies": {
+    "prisma": "6.5.0"
+  }
+}
