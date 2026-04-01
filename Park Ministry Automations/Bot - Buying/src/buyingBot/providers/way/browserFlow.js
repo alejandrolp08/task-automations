@@ -392,6 +392,34 @@ function hasExactPrimaryAddressMatch(normalizedSuggestion, hints) {
   return true;
 }
 
+function hasStreetNumberMatch(normalizedSuggestion, hints) {
+  if (!normalizedSuggestion || !hints?.streetNumber) {
+    return false;
+  }
+
+  return normalizedSuggestion.includes(hints.streetNumber);
+}
+
+function isSuggestionAcceptableMatch(normalizedSuggestion, score, hints, searchMode, airportAliasScore = 0) {
+  const exactPrimaryMatch = hasExactPrimaryAddressMatch(normalizedSuggestion, hints);
+  const streetNumberMatch = hasStreetNumberMatch(normalizedSuggestion, hints);
+  const requiresStreetNumberMatch = Boolean(hints?.streetNumber) && searchMode !== "airport";
+
+  if (searchMode === "airport") {
+    return score >= 10 || airportAliasScore >= 12;
+  }
+
+  if (exactPrimaryMatch) {
+    return true;
+  }
+
+  if (requiresStreetNumberMatch && !streetNumberMatch) {
+    return false;
+  }
+
+  return score >= 10;
+}
+
 function scoreSuggestionText(suggestionText, hints) {
   const normalizedSuggestion = normalizeAddressText(suggestionText);
   const hasExactPrimaryMatch = hasExactPrimaryAddressMatch(normalizedSuggestion, hints);
@@ -2799,6 +2827,13 @@ async function ensureLoggedIn(page) {
 
   let loggedOut = await page.locator(WAY_SELECTORS.login.emailInput).isVisible().catch(() => false);
   console.log(`Way login: login form visible -> ${loggedOut ? "yes" : "no"}`);
+  if (!loggedOut && /\/login\b/i.test(page.url())) {
+    await page.locator(WAY_SELECTORS.login.emailInput).waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
+    await dismissCookieBanner(page);
+    await suppressFloatingOverlays(page);
+    loggedOut = await page.locator(WAY_SELECTORS.login.emailInput).isVisible().catch(() => false);
+    console.log(`Way login: delayed login form recheck -> ${loggedOut ? "yes" : "no"}`);
+  }
   if (!loggedOut) {
     const sessionState = await confirmAuthenticatedSession();
     console.log(`Way login: session validation result -> ${JSON.stringify(sessionState)}`);
@@ -2992,7 +3027,19 @@ async function searchLots(page, record, resolvedEventTime, options = {}) {
       const candidateLocationValue = await locationInput.inputValue().catch(() => "");
       const candidateLocationScore = scoreSuggestionText(candidateLocationValue, addressHints);
       const candidateTextScore = scoreSuggestionText(candidate.text, addressHints);
-      if (candidateLocationScore >= 10 || candidateTextScore >= 10) {
+      const candidateLocationAccepted = isSuggestionAcceptableMatch(
+        normalizeAddressText(candidateLocationValue),
+        candidateLocationScore,
+        addressHints,
+        searchMode,
+      );
+      const candidateTextAccepted = isSuggestionAcceptableMatch(
+        normalizeAddressText(candidate.text),
+        candidateTextScore,
+        addressHints,
+        searchMode,
+      );
+      if (candidateLocationAccepted || candidateTextAccepted) {
         selectedSuggestion = candidate;
         console.log(`Way search: selected suggestion -> ${candidate.text}`);
         break;
@@ -3024,9 +3071,21 @@ async function searchLots(page, record, resolvedEventTime, options = {}) {
     ? [airportMetadata.airport_query || "", ...(airportMetadata.lot_aliases || [])]
     : [];
   const selectedAirportAliasScore = scoreAliasMatch(selectedLocationValue, airportLocationAliases);
-  const locationSelectionAccepted = searchMode === "airport"
-    ? selectedLocationScore >= 10 || selectedSuggestionScore >= 10 || selectedAirportAliasScore >= 12
-    : selectedLocationScore >= 10 || selectedSuggestionScore >= 10;
+  const locationSelectionAccepted =
+    isSuggestionAcceptableMatch(
+      normalizeAddressText(selectedLocationValue),
+      selectedLocationScore,
+      addressHints,
+      searchMode,
+      selectedAirportAliasScore,
+    ) ||
+    isSuggestionAcceptableMatch(
+      normalizeAddressText(selectedSuggestion?.text || ""),
+      selectedSuggestionScore,
+      addressHints,
+      searchMode,
+      selectedAirportAliasScore,
+    );
   if (!locationSelectionAccepted) {
     throw new Error(`Way selected location does not sufficiently match target address: ${selectedLocationValue}`);
   }
@@ -3479,6 +3538,17 @@ async function selectLot(page, record, options = {}) {
       normalizeAddressText(`${card.addressText} ${card.titleText} ${card.containerText}`).includes(addressHints.streetNumber),
     tokenOverlap: tokenOverlapCount(targetLocation, `${card.addressText} ${card.titleText} ${card.containerText}`, 3),
     available: /reserve now/i.test(card.actionText),
+  })).map((card) => ({
+    ...card,
+    acceptableMatch:
+      card.exactAliasMatched ||
+      card.aliasScore >= 12 ||
+      isSuggestionAcceptableMatch(
+        normalizeAddressText(`${card.addressText} ${card.titleText} ${card.containerText}`),
+        card.score,
+        addressHints,
+        "hourly",
+      ),
   }));
 
   scoredCards.sort((left, right) => right.score - left.score);
@@ -3502,10 +3572,11 @@ async function selectLot(page, record, options = {}) {
 
   const bestCard = lotAliases.length > 0
     ? strongAliasCandidate
-    : scoredCards[0];
+    : scoredCards.find((card) => card.acceptableMatch) || null;
 
   const bestSoldOutCandidate = scoredCards.find(
     (card) =>
+      card.acceptableMatch &&
       !card.available &&
       /soldout/i.test(card.actionText) &&
       (
@@ -3544,6 +3615,7 @@ async function selectLot(page, record, options = {}) {
     const bestAvailableAlternative = scoredCards.find((card) => card.available);
     const fallbackIsStrongMatch =
       bestAvailableAlternative &&
+      bestAvailableAlternative.acceptableMatch &&
       bestAvailableAlternative.score >= 12 &&
       bestAvailableAlternative.score >= Math.max(12, bestCard.score - 10);
 
