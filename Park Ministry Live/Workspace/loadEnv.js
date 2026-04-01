@@ -1,12 +1,20 @@
 const fs = require("fs");
 const path = require("path");
 
-function loadEnv(envPath = path.join(process.cwd(), ".env")) {
-  if (!fs.existsSync(envPath)) {
+function loadEnv(envPath) {
+  const candidatePaths = [
+    envPath,
+    path.join(process.cwd(), ".env"),
+    path.join(process.cwd(), "..", "Park Ministry Automations", ".env"),
+  ].filter(Boolean);
+
+  const resolvedEnvPath = candidatePaths.find((candidate) => fs.existsSync(candidate));
+
+  if (!resolvedEnvPath) {
     return;
   }
 
-  const raw = fs.readFileSync(envPath, "utf8");
+  const raw = fs.readFileSync(resolvedEnvPath, "utf8");
   const lines = raw.split(/\r?\n/);
 
   for (const line of lines) {

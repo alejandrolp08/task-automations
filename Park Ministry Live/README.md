@@ -58,6 +58,11 @@ Then fill in:
 - `STUBHUB_POS_API_TOKEN`
 - `STUBHUB_POS_ACCOUNT_ID`
 
+Internal workspace note:
+
+- when this project is run from the private `Task Automations` workspace, it can also reuse `../Park Ministry Automations/.env`
+- when this project is cloned on its own, for example on a VPS, it needs its own local `.env`
+
 ## Publishing With Subtree
 
 This folder is the active source of truth for fulfillment. Production and VPS-facing fulfillment changes should be made here, not in the older copy under `Park Ministry Automations/`.
