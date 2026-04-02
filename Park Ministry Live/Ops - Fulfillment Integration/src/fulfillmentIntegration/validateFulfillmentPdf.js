@@ -11,7 +11,14 @@ function isMissingExecutableError(error) {
     return false;
   }
 
-  return error.code === "ENOENT" || /not recognized as an internal or external command/i.test(String(error.message || ""));
+  const message = String(error.message || "");
+
+  return (
+    error.code === "ENOENT" ||
+    /not recognized as an internal or external command/i.test(message) ||
+    /python was not found/i.test(message) ||
+    /no se encontro python/i.test(normalizeText(message))
+  );
 }
 
 async function runFirstAvailableCommand(commandAttempts, options = {}) {
@@ -441,9 +448,9 @@ async function extractPdfText(pdfPath) {
 
   const commandAttempts = process.platform === "win32"
     ? [
-      { command: "python3", args: [scriptPath, pdfPath] },
       { command: "python", args: [scriptPath, pdfPath] },
       { command: "py", args: ["-3", scriptPath, pdfPath] },
+      { command: "python3", args: [scriptPath, pdfPath] },
     ]
     : [
       { command: "python3", args: [scriptPath, pdfPath] },
