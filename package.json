@@ -21,19 +21,19 @@
     ]
   },
   "scripts": {
-    "help": "node -e \"console.log(['TASK AUTOMATIONS COMMANDS','','PARK MINISTRY','  npm run park:help','  npm run park:buying:live','  npm run park:buying:live:force-event-id','  npm run park:listing:reachpro','  npm run park:sales:track','  npm run park:fulfillment:run','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run park:fulfillment:limited','','COPY / PASTE FROM TASK AUTOMATIONS','  npm run park:buying:live','  npm run park:buying:live:force-event-id','  LISTING_FORCE_EVENT_IDS=160123456 npm run park:buying:live:force-event-id','  npm run park:listing:reachpro','  LISTING_ALLOW_SMARTSUITE_EVENT_ID_ONLY_FALLBACK=1 npm run park:listing:reachpro:force-event-id','  npm run park:sales:track','  npm run park:fulfillment:run','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run park:fulfillment:limited'].join('\\n'))\"",
+    "help": "node -e \"console.log(['TASK AUTOMATIONS COMMANDS','','PARK MINISTRY','  npm run park:help','  npm run park:buying:live','  npm run park:buying:live:force-event-id','  npm run park:listing:reachpro','  npm run park:sales:track','  npm run park:fulfillment:run','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run park:fulfillment:limited','','COPY / PASTE FROM TASK AUTOMATIONS','  npm run park:buying:live','  npm run park:buying:live:force-event-id','  LISTING_FORCE_EVENT_IDS=160123456 npm run park:buying:live:force-event-id','  npm run park:listing:reachpro','  LISTING_ALLOW_SMARTSUITE_EVENT_ID_ONLY_FALLBACK=1 npm run park:listing:reachpro:force-event-id','  npm run park:sales:track','  npm run park:fulfillment:run','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run park:fulfillment:limited','','NOTE','  Fulfillment now runs from Park Ministry Live.'].join('\\n'))\"",
     "commands": "npm run help",
-    "park:help": "npm --prefix \"Park Ministry Automations\" run help",
+    "park:help": "node -e \"console.log(['PARK MINISTRY FROM TASK AUTOMATIONS','','BUYING / LISTING / SALES','  npm run park:buying:live','  npm run park:buying:live:force-event-id','  npm run park:listing:reachpro','  npm run park:listing:reachpro:force-event-id','  npm run park:sales:track','','FULFILLMENT (PARK MINISTRY LIVE)','  npm run park:fulfillment:run','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run park:fulfillment:limited','','DEBUG','  npm run park:debug:fulfillment:preview','  npm run park:debug:fulfillment:validate-pdfs','  npm run park:debug:fulfillment:stubhub','  npm run park:debug:way:checkout','  npm run park:debug:way:buy-pass'].join('\\n'))\"",
     "park:buying:live": "npm --prefix \"Park Ministry Automations\" run buying:live",
     "park:buying:live:force-event-id": "npm --prefix \"Park Ministry Automations\" run buying:live:force-event-id",
     "park:listing:reachpro": "npm --prefix \"Park Ministry Automations\" run listing:reachpro",
     "park:listing:reachpro:force-event-id": "npm --prefix \"Park Ministry Automations\" run listing:reachpro:force-event-id",
     "park:sales:track": "npm --prefix \"Park Ministry Automations\" run sales:track",
-    "park:fulfillment:run": "npm --prefix \"Park Ministry Automations\" run fulfillment:run",
-    "park:fulfillment:limited": "npm --prefix \"Park Ministry Automations\" run fulfillment:limited",
-    "park:debug:fulfillment:preview": "npm --prefix \"Park Ministry Automations\" run debug:fulfillment:preview",
-    "park:debug:fulfillment:validate-pdfs": "npm --prefix \"Park Ministry Automations\" run debug:fulfillment:validate-pdfs",
-    "park:debug:fulfillment:stubhub": "npm --prefix \"Park Ministry Automations\" run debug:fulfillment:stubhub",
+    "park:fulfillment:run": "npm --prefix \"Park Ministry Live\" run fulfillment:run",
+    "park:fulfillment:limited": "npm --prefix \"Park Ministry Live\" run fulfillment:limited",
+    "park:debug:fulfillment:preview": "npm --prefix \"Park Ministry Live\" run debug:fulfillment:preview",
+    "park:debug:fulfillment:validate-pdfs": "npm --prefix \"Park Ministry Live\" run debug:fulfillment:validate-pdfs",
+    "park:debug:fulfillment:stubhub": "npm --prefix \"Park Ministry Live\" run debug:fulfillment:stubhub",
     "park:debug:way:checkout": "npm --prefix \"Park Ministry Automations\" run debug:way:checkout",
     "park:debug:way:buy-pass": "npm --prefix \"Park Ministry Automations\" run debug:way:buy-pass"
   }

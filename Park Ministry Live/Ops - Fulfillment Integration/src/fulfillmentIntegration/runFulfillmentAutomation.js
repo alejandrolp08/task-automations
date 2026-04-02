@@ -212,6 +212,15 @@ function printExecutiveSummary(result) {
   console.log(lines.join("\n"));
 }
 
+function isRetryableSendError(error) {
+  const status = Number(error?.status || 0);
+  if (status >= 500) {
+    return true;
+  }
+
+  return /StubHub POS API 5\d\d:/i.test(String(error?.message || ""));
+}
+
 async function writeAutomationResult(result) {
   await fs.mkdir(PATHS.outputs, { recursive: true });
   const filePath = path.join(PATHS.outputs, "fulfillment-automation-last-run.json");
@@ -462,18 +471,46 @@ async function runFulfillmentAutomation() {
           smartsuite_updates: fulfilledUpdates,
         });
       } catch (error) {
-        const commentUpdates = await appendCommentToRecords(
-          passRecords,
-          AUTOMATION_NOTE_MESSAGES.sendFailed,
-          apply,
-        );
-        actions.push({
-          group_key: group.group_key,
-          stubhub_sale: group.stubhub_sale,
-          action: apply ? "send_failed_and_commented" : "would_comment_send_failed",
-          error: error.message,
-          smartsuite_updates: commentUpdates,
-        });
+        if (isRetryableSendError(error)) {
+          actions.push({
+            group_key: group.group_key,
+            stubhub_sale: group.stubhub_sale,
+            action: "send_failed_retryable",
+            error: error.message,
+            retryable: true,
+            error_status: Number(error.status || 0) || null,
+            error_attempts: Number(error.attempts || 0) || null,
+            request_preview: {
+              provider: sendInput.provider,
+              marketplace_sale_id: sendInput.marketplaceSaleId,
+              pdf_entries_count: Array.isArray(sendInput.pdfEntries) ? sendInput.pdfEntries.length : 0,
+              ticket_ids_count: Array.isArray(precheck?.available_ticket_ids) ? precheck.available_ticket_ids.length : 0,
+            },
+            stubhub_precheck: {
+              invoice_id: precheck.invoice_id || "",
+              pos_fulfillment_state: precheck.pos_fulfillment_state || "",
+              allocation_state: precheck.allocation_state || "",
+              sale_status: precheck.sale_status || "",
+              available_ticket_ids: Array.isArray(precheck.available_ticket_ids)
+                ? precheck.available_ticket_ids
+                : [],
+            },
+            smartsuite_updates: [],
+          });
+        } else {
+          const commentUpdates = await appendCommentToRecords(
+            passRecords,
+            AUTOMATION_NOTE_MESSAGES.sendFailed,
+            apply,
+          );
+          actions.push({
+            group_key: group.group_key,
+            stubhub_sale: group.stubhub_sale,
+            action: apply ? "send_failed_and_commented" : "would_comment_send_failed",
+            error: error.message,
+            smartsuite_updates: commentUpdates,
+          });
+        }
       }
     }
 

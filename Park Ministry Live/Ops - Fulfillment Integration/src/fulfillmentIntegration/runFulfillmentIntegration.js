@@ -123,14 +123,51 @@ async function stubhubRequest(url, options = {}) {
       body && typeof body === "object"
         ? body.message || JSON.stringify(body)
         : bodyText || response.statusText;
-
-    throw new Error(`StubHub POS API ${response.status}: ${detail}`);
+    const error = new Error(`StubHub POS API ${response.status}: ${detail}`);
+    error.status = response.status;
+    error.url = url;
+    error.response_body = body;
+    error.response_text = bodyText;
+    error.retryable = response.status >= 500;
+    throw error;
   }
 
   return {
     status: response.status,
     body,
   };
+}
+
+function isRetryableStubhubError(error) {
+  return Boolean(error && Number(error.status) >= 500);
+}
+
+async function waitBeforeRetry(delayMs) {
+  await new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+async function stubhubRequestWithRetry(url, options = {}, retryOptions = {}) {
+  const maxAttempts = Math.max(1, Number(retryOptions.maxAttempts || 3));
+  const baseDelayMs = Math.max(0, Number(retryOptions.baseDelayMs || 1500));
+
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await stubhubRequest(url, options);
+    } catch (error) {
+      lastError = error;
+
+      if (!isRetryableStubhubError(error) || attempt >= maxAttempts) {
+        error.attempts = attempt;
+        throw error;
+      }
+
+      await waitBeforeRetry(baseDelayMs * attempt);
+    }
+  }
+
+  throw lastError;
 }
 
 async function resolveStubhubInvoice(record, context) {
@@ -258,10 +295,13 @@ async function runStubhubFulfillment(record, context) {
     contentType: "application/json",
   });
 
-  const patchResponse = await stubhubRequest(buildStubhubInvoiceUrl(invoiceId), {
+  const patchResponse = await stubhubRequestWithRetry(buildStubhubInvoiceUrl(invoiceId), {
     method: "PATCH",
     headers,
     body: JSON.stringify(updatePayload),
+  }, {
+    maxAttempts: Number(process.env.FULFILLMENT_STUBHUB_PATCH_MAX_ATTEMPTS || 3),
+    baseDelayMs: Number(process.env.FULFILLMENT_STUBHUB_PATCH_RETRY_DELAY_MS || 1500),
   });
 
   let assetsResponse = null;
