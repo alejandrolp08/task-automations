@@ -16,6 +16,16 @@ const {
   buildSharedExecutionStages,
 } = require("./providerPlanning");
 const { executeWayCheckout } = require("./providers/way/executeCheckout");
+const {
+  getActiveBuyingProviderKeys,
+  getFallbackMaxDistanceMiles,
+  getFallbackMaxBuyCostDelta,
+} = require("./config");
+const {
+  fetchFallbackLocations,
+  buildFallbackLocationIndex,
+  getFallbackLocationsForCandidate,
+} = require("./alternateLocations");
 
 loadEnv();
 
@@ -184,6 +194,131 @@ function formatRecordContext(candidate, resolution, validation) {
     resolution?.resolved_event_time || candidate?.event_time || validation?.event_status || "unverified",
     candidate?.parking_location || "unknown-location",
   ].join(" | ");
+}
+
+function shouldTryAlternateLocationFallback(result) {
+  return [
+    "target_lot_sold_out",
+    "parking_lot_not_found",
+    "best_match_unavailable",
+  ].includes(String(result?.status || ""));
+}
+
+function cloneCandidateWithFallbackLocation(candidate, fallbackLocation) {
+  return {
+    ...candidate,
+    provider: fallbackLocation.provider || candidate.provider,
+    provider_key: fallbackLocation.provider_key || candidate.provider_key,
+    parking_location: fallbackLocation.parking_location,
+    parking_location_id: fallbackLocation.parking_location_id || candidate.parking_location_id,
+    parking_location_record_id: fallbackLocation.record_id || candidate.parking_location_record_id,
+    fallback_distance_from_venue: fallbackLocation.distance_from_venue,
+    fallback_distance_unit: fallbackLocation.distance_unit,
+    fallback_distance_miles: fallbackLocation.distance_miles,
+  };
+}
+
+async function executeWayCheckoutWithLocationFallback({
+  candidate,
+  resolvedEventTime,
+  resolvedEventStatus,
+  checkoutStrategies,
+  dryRun,
+  keepBrowserOpen,
+  updateSmartsuite,
+  excludeReservationIds,
+  fallbackLocations = [],
+} = {}) {
+  const attemptedLocations = [];
+  const locationCandidates = [
+    { source: "primary", candidate, fallbackLocation: null },
+    ...fallbackLocations.map((fallbackLocation, index) => ({
+      source: "alternate",
+      candidate: cloneCandidateWithFallbackLocation(candidate, fallbackLocation),
+      fallbackLocation,
+      fallback_rank: index + 1,
+    })),
+  ];
+
+  let lastResult = null;
+
+  for (let index = 0; index < locationCandidates.length; index += 1) {
+    const locationAttempt = locationCandidates[index];
+
+    if (locationAttempt.source === "alternate") {
+      console.log(
+        `Way fallback location ${locationAttempt.fallback_rank}/${fallbackLocations.length} -> ${locationAttempt.candidate.parking_location}`,
+      );
+    }
+
+    const checkoutResult = await executeWayCheckout({
+      candidate: locationAttempt.candidate,
+      resolvedEventTime,
+      resolvedEventStatus,
+      checkoutStrategies,
+      dryRun,
+      keepBrowserOpen,
+      updateSmartsuite,
+      excludeReservationIds,
+    });
+
+    attemptedLocations.push({
+      source: locationAttempt.source,
+      fallback_rank: locationAttempt.fallback_rank || null,
+      parking_location: locationAttempt.candidate.parking_location,
+      parking_location_id: locationAttempt.candidate.parking_location_id || "",
+      parking_location_record_id: locationAttempt.candidate.parking_location_record_id || "",
+      status: checkoutResult?.status || "unknown",
+      error_message: checkoutResult?.error_message || null,
+      distance_miles:
+        locationAttempt.fallbackLocation?.distance_miles ??
+        locationAttempt.candidate?.fallback_distance_miles ??
+        null,
+    });
+
+    lastResult = {
+      ...checkoutResult,
+      attempted_locations: attemptedLocations,
+      selected_parking_location: locationAttempt.candidate.parking_location,
+      selected_parking_location_id: locationAttempt.candidate.parking_location_id || "",
+      selected_parking_location_record_id: locationAttempt.candidate.parking_location_record_id || "",
+      used_alternate_location: locationAttempt.source === "alternate",
+      alternate_location_rank: locationAttempt.fallback_rank || null,
+    };
+
+    const hasRemainingAlternates = index < locationCandidates.length - 1;
+    if (!hasRemainingAlternates || !shouldTryAlternateLocationFallback(checkoutResult)) {
+      if (
+        !hasRemainingAlternates &&
+        shouldTryAlternateLocationFallback(checkoutResult) &&
+        locationCandidates.length > 1
+      ) {
+        lastResult.error_message = [
+          checkoutResult?.error_message || null,
+          "No valid alternate lots remained after fallback attempts.",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      }
+
+      if (
+        !hasRemainingAlternates &&
+        shouldTryAlternateLocationFallback(checkoutResult) &&
+        locationCandidates.length === 1
+      ) {
+        lastResult.error_message = [
+          checkoutResult?.error_message || null,
+          "No valid alternate lots were available for this venue/provider.",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      }
+
+      return lastResult;
+    }
+  }
+
+  return lastResult;
 }
 
 function formatSummaryRecordLine(item) {
@@ -428,13 +563,13 @@ function getWayRecords(result) {
   );
 }
 
-async function buildFreshBuyingResult(startDate, endDate) {
+async function buildFreshBuyingResult(startDate, endDate, { activeProviderKeys = [] } = {}) {
   const dataPath = getBuyingBotOperativePaths().data.sampleBuyingJson;
   const outputPath = getBuyingBotOperativePaths().resultJson;
 
   const { records: rawRecords, source } = await fetchBuying(dataPath, { startDate, endDate });
   const normalizedRecords = normalizeBuyingRecords(rawRecords);
-  const recordsToBuy = filterBuying(normalizedRecords, startDate, endDate);
+  const recordsToBuy = filterBuying(normalizedRecords, startDate, endDate, { activeProviderKeys });
   const sharedExecutionStages = await buildSharedExecutionStages(recordsToBuy);
   const providerExecutionPlans = buildProviderExecutionPlans(recordsToBuy);
   const result = buildOutput(
@@ -452,11 +587,15 @@ async function buildFreshBuyingResult(startDate, endDate) {
     result,
     normalizedRecords,
     source,
+    activeProviderKeys,
   };
 }
 
 async function runBuyingBotLive() {
   const { startDate, endDate } = await askDateRange();
+  const activeProviderKeys = getActiveBuyingProviderKeys();
+  const fallbackMaxDistanceMiles = getFallbackMaxDistanceMiles();
+  const fallbackMaxBuyCostDelta = getFallbackMaxBuyCostDelta();
   const rawMaxPurchases = String(process.env.BUYING_BOT_MAX_PURCHASES || "").trim();
   const maxPurchases = rawMaxPurchases ? Number(rawMaxPurchases) : Number.POSITIVE_INFINITY;
   const keepBrowserOpen = parseBoolean(process.env.WAY_KEEP_BROWSER_OPEN, false);
@@ -478,12 +617,14 @@ async function runBuyingBotLive() {
     }
   }
 
-  const { result, source } = await buildFreshBuyingResult(startDate, endDate);
+  const { result, source } = await buildFreshBuyingResult(startDate, endDate, { activeProviderKeys });
   const resolutionMap = buildResolutionMap(result);
   const wayRecords = getWayRecords(result);
+  const fallbackLocationIndex = buildFallbackLocationIndex(await fetchFallbackLocations());
   const knownReservationIds = new Set();
 
   console.log(`Buying source: ${source}`);
+  console.log(`Active buying providers: ${activeProviderKeys.join(", ") || "none"}`);
 
   const eligibleWayRecords = wayRecords
     .map((record) => ({
@@ -595,6 +736,11 @@ async function runBuyingBotLive() {
     let purchaseResult = null;
     const attemptResults = [];
     let baselineReservationIds = null;
+    const fallbackLocations = getFallbackLocationsForCandidate(item.candidate, fallbackLocationIndex, {
+      activeProviderKeys,
+      maxDistanceMiles: fallbackMaxDistanceMiles,
+      maxBuyCostDelta: fallbackMaxBuyCostDelta,
+    });
 
     for (let attempt = 1; attempt <= maxAttemptsPerRecord; attempt += 1) {
       try {
@@ -603,7 +749,7 @@ async function runBuyingBotLive() {
           successfulStrategyByEquivalentGroup.get(equivalentLotGroupKey) || null,
         );
         purchaseResult = await withFilteredWayLogs(() =>
-          executeWayCheckout({
+          executeWayCheckoutWithLocationFallback({
             candidate: item.candidate,
             resolvedEventTime: item.resolution.resolved_event_time,
             resolvedEventStatus: item.validation.event_status,
@@ -612,6 +758,7 @@ async function runBuyingBotLive() {
             keepBrowserOpen,
             updateSmartsuite: true,
             excludeReservationIds: Array.from(knownReservationIds),
+            fallbackLocations,
           }),
         );
       } catch (error) {
@@ -693,7 +840,8 @@ async function runBuyingBotLive() {
       venue: item.candidate.venue || "",
       event_date: item.candidate.event_date || "",
       event_time: item.resolution?.resolved_event_time || item.candidate.event_time || item.validation?.event_status || "",
-      parking_location: item.candidate.parking_location || "",
+      parking_location: purchaseResult?.selected_parking_location || item.candidate.parking_location || "",
+      primary_parking_location: item.candidate.parking_location || "",
       attempt_count: attemptResults.length,
       attempts: attemptResults,
       result: purchaseResult,
@@ -744,6 +892,7 @@ async function runBuyingBotLive() {
     attempted: purchaseResults.length,
     completed: purchaseResults.filter((item) => item.result.status === "purchase_completed").length,
     skipped: purchaseResults.filter((item) => item.result.status !== "purchase_completed").length,
+    alternate_location_used: purchaseResults.filter((item) => item.result.used_alternate_location).length,
     sold_out_group_skipped: purchaseResults.filter((item) => item.result.status === "sold_out_group_skipped").length,
     equivalent_group_failure_skipped: purchaseResults.filter((item) => item.result.status === "equivalent_group_failure_skipped").length,
     target_lot_sold_out: purchaseResults.filter((item) => item.result.status === "target_lot_sold_out").length,
@@ -839,6 +988,9 @@ async function runBuyingBotLive() {
   );
 
   console.log(`Summary -> attempted: ${summary.attempted}, completed: ${summary.completed}, skipped: ${summary.skipped}`);
+  if (summary.alternate_location_used > 0) {
+    console.log(`Alternate location fallback used -> ${summary.alternate_location_used}`);
+  }
 
   if (summary.target_lot_sold_out > 0 || summary.sold_out_group_skipped > 0) {
     console.log("");

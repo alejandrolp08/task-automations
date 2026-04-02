@@ -28,7 +28,10 @@ async function findExistingReservationUsage(reservationId) {
   return matches;
 }
 
-async function updateSmartsuiteReservation(recordId, { reservationId, reservationUrl, actualBuyCost } = {}) {
+async function updateSmartsuiteReservation(
+  recordId,
+  { reservationId, reservationUrl, actualBuyCost, parkingLocationRecordId, parkingLocationId } = {},
+) {
   if (!recordId) {
     throw new Error("updateSmartsuiteReservation requires a recordId.");
   }
@@ -55,6 +58,11 @@ async function updateSmartsuiteReservation(recordId, { reservationId, reservatio
     body: JSON.stringify({
       [BUYING_SMARTSUITE.fields.reservationId]: reservationId,
       [BUYING_SMARTSUITE.fields.reservationUrl]: reservationUrl,
+      ...(parkingLocationRecordId
+        ? {
+            [BUYING_SMARTSUITE.fields.parkingLocation]: [parkingLocationRecordId],
+          }
+        : {}),
       ...(Number.isFinite(Number(actualBuyCost))
         ? {
             [BUYING_SMARTSUITE.fields.buyCost]: Number(actualBuyCost),
@@ -76,6 +84,8 @@ async function updateSmartsuiteReservation(recordId, { reservationId, reservatio
     reservation_id: reservationId,
     reservation_url: reservationUrl,
     actual_buy_cost: Number.isFinite(Number(actualBuyCost)) ? Number(actualBuyCost) : null,
+    parking_location_record_id: parkingLocationRecordId || null,
+    parking_location_id: parkingLocationId || null,
     smartsuite_record: payload,
   };
 }

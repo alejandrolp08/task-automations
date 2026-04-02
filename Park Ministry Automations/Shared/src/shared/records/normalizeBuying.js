@@ -112,19 +112,43 @@ function toNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function unwrapFirstLinkedRecord(value) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const linkedRecord = unwrapFirstLinkedRecord(item);
+      if (linkedRecord) {
+        return linkedRecord;
+      }
+    }
+    return null;
+  }
+
+  if (value && typeof value === "object" && Object.prototype.hasOwnProperty.call(value, "id")) {
+    return value;
+  }
+
+  return null;
+}
+
 function normalizeBuyingRecord(record) {
   const fields = SMARTSUITE.fields;
+  const venueValue = getFieldValue(record, fields.venueName, "venue");
+  const parkingLocationValue = getFieldValue(record, fields.parkingLocation, "parking_location");
+  const venueLinkedRecord = unwrapFirstLinkedRecord(venueValue);
+  const parkingLocationLinkedRecord = unwrapFirstLinkedRecord(parkingLocationValue);
 
   return {
     record_id: record.record_id || record.id || '',
     event_id: toText(getFieldValue(record, fields.eventId, 'event_id')),
     event: toText(getFieldValue(record, fields.performerName, 'event')),
-    venue: toText(getFieldValue(record, fields.venueName, 'venue')),
+    venue: toText(venueValue),
+    venue_record_id: toText(venueLinkedRecord?.id || ''),
     event_date: normalizeDateValue(getFieldValue(record, fields.eventDate, 'event_date')),
     event_time: normalizeTimeValue(getFieldValue(record, fields.eventTime, 'event_time')),
     provider: toText(getFieldValue(record, fields.provider, 'provider')),
     provider_key: normalizeProviderKey(toText(getFieldValue(record, fields.provider, 'provider'))),
-    parking_location: toText(getFieldValue(record, fields.parkingLocation, 'parking_location')),
+    parking_location: toText(parkingLocationValue),
+    parking_location_record_id: toText(parkingLocationLinkedRecord?.id || ''),
     parking_location_id: toText(getFieldValue(record, fields.parkingLocationId, 'parking_location_id')),
     city_state: toText(getFieldValue(record, fields.cityState, 'city_state')),
     buy_cost: toNumber(getFieldValue(record, fields.buyCost, 'buy_cost')),

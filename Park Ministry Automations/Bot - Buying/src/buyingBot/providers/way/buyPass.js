@@ -196,6 +196,8 @@ async function main() {
         reservationId: reservationResult.reservation_id,
         reservationUrl: reservationResult.reservation_url,
         actualBuyCost: reviewResult?.priceAmount,
+        parkingLocationRecordId: candidate.parking_location_record_id,
+        parkingLocationId: candidate.parking_location_id,
       });
     }
 

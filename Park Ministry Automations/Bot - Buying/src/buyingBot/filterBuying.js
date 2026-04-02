@@ -74,7 +74,11 @@ function hasRequiredBuyingFields(record) {
   ].every((value) => !isEmpty(value));
 }
 
-function filterBuying(records, startDate, endDate) {
+function filterBuying(records, startDate, endDate, options = {}) {
+  const activeProviderKeys = Array.isArray(options.activeProviderKeys)
+    ? options.activeProviderKeys.filter(Boolean)
+    : [];
+
   if (!isValidDateString(startDate) || !isValidDateString(endDate)) {
     throw new Error("Dates must use YYYY-MM-DD format.");
   }
@@ -100,19 +104,23 @@ function filterBuying(records, startDate, endDate) {
       const buyCost = Number(record.buy_cost);
       const sellPrice = Number(record.sell_price);
       const isProfitable = Number.isFinite(buyCost) && Number.isFinite(sellPrice) && buyCost < sellPrice;
+      const isActiveProvider =
+        activeProviderKeys.length === 0 || activeProviderKeys.includes(String(record.provider_key || "").trim());
 
-      return isPending && hasNoReservation && hasRequiredFields && isInRange && isProfitable;
+      return isPending && hasNoReservation && hasRequiredFields && isInRange && isProfitable && isActiveProvider;
     })
     .map((record) => ({
       record_id: record.record_id,
       event_id: record.event_id,
       event: record.event,
       venue: record.venue,
+      venue_record_id: record.venue_record_id,
       event_date: record.event_date,
       event_time: record.event_time,
       provider: record.provider,
       provider_key: record.provider_key,
       parking_location: record.parking_location,
+      parking_location_record_id: record.parking_location_record_id,
       parking_location_id: record.parking_location_id,
       city_state: record.city_state,
       buy_cost: Number(record.buy_cost),
