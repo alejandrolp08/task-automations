@@ -6,6 +6,33 @@ const { promisify } = require("util");
 const execFileAsync = promisify(execFile);
 const MIN_DIRECT_TEXT_LENGTH = 120;
 
+function isMissingExecutableError(error) {
+  if (!error) {
+    return false;
+  }
+
+  return error.code === "ENOENT" || /not recognized as an internal or external command/i.test(String(error.message || ""));
+}
+
+async function runFirstAvailableCommand(commandAttempts, options = {}) {
+  let lastError = null;
+
+  for (const attempt of commandAttempts) {
+    try {
+      return await execFileAsync(attempt.command, attempt.args, options);
+    } catch (error) {
+      if (isMissingExecutableError(error)) {
+        lastError = error;
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  throw lastError || new Error("No compatible command was available.");
+}
+
 function normalizeText(value) {
   return String(value || "")
     .toLowerCase()
@@ -411,7 +438,19 @@ function scoreValidation(checks, issues) {
 
 async function extractPdfText(pdfPath) {
   const scriptPath = path.join(__dirname, "extractPdfText.py");
-  const { stdout } = await execFileAsync("python3", [scriptPath, pdfPath], {
+
+  const commandAttempts = process.platform === "win32"
+    ? [
+      { command: "python3", args: [scriptPath, pdfPath] },
+      { command: "python", args: [scriptPath, pdfPath] },
+      { command: "py", args: ["-3", scriptPath, pdfPath] },
+    ]
+    : [
+      { command: "python3", args: [scriptPath, pdfPath] },
+      { command: "python", args: [scriptPath, pdfPath] },
+    ];
+
+  const { stdout } = await runFirstAvailableCommand(commandAttempts, {
     maxBuffer: 10 * 1024 * 1024,
   });
   const parsed = JSON.parse(stdout);
@@ -449,7 +488,21 @@ async function extractPdfTextWithFallback(pdfPath) {
     };
   }
 
-  const ocr = await extractPdfTextWithOcr(pdfPath);
+  let ocr;
+
+  try {
+    ocr = await extractPdfTextWithOcr(pdfPath);
+  } catch (error) {
+    if (isMissingExecutableError(error) && directText) {
+      return {
+        ...direct,
+        source: "direct_text_no_ocr",
+      };
+    }
+
+    throw error;
+  }
+
   const ocrText = normalizeWhitespace(ocr?.text || "");
 
   if (ocrText.length > directText.length || directIsLowQuality) {
