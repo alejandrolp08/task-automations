@@ -44,6 +44,8 @@ npm run park:sales:track
 
 ### Fulfillment Integration
 
+Fulfillment now runs from `Park Ministry Live` through these root wrappers.
+
 ```bash
 npm run park:fulfillment:run
 ```
@@ -63,9 +65,9 @@ FULFILLMENT_AUTOMATION_LIMIT=25 npm run park:fulfillment:limited
 - `park:listing:reachpro:force-event-id`:
   use when Listing needs to rely on the SmartSuite `event_id` fallback
 - `park:fulfillment:run`:
-  full fulfillment run
+  full fulfillment run from `Park Ministry Live`
 - `park:fulfillment:limited`:
-  full fulfillment run with a manual batch limit
+  full fulfillment run from `Park Ministry Live` with a manual batch limit
 
 ## Git Workflow
 

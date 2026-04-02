@@ -8,32 +8,22 @@
       "buying:live",
       "buying:live:force-event-id",
       "listing:reachpro",
-      "sales:track",
-      "fulfillment:run",
-      "fulfillment:limited"
+      "sales:track"
     ],
     "debug": [
       "listing:reachpro:force-event-id",
-      "debug:fulfillment:preview",
-      "debug:fulfillment:validate-pdfs",
-      "debug:fulfillment:stubhub",
       "debug:way:checkout",
       "debug:way:buy-pass"
     ]
   },
   "scripts": {
-    "help": "node -e \"console.log(['PARK MINISTRY COMMANDS','','MAIN','  npm run buying:live','  npm run buying:live:force-event-id','  npm run listing:reachpro','  npm run sales:track','  npm run fulfillment:run','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run fulfillment:limited','','DEBUG','  npm run listing:reachpro:force-event-id','  npm run debug:fulfillment:preview','  npm run debug:fulfillment:validate-pdfs','  npm run debug:fulfillment:stubhub','  npm run debug:way:checkout','  npm run debug:way:buy-pass','','Examples','  npm run buying:live:force-event-id','  LISTING_FORCE_EVENT_IDS=160123456 npm run buying:live:force-event-id','  LISTING_ALLOW_SMARTSUITE_EVENT_ID_ONLY_FALLBACK=1 npm run listing:reachpro:force-event-id','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run fulfillment:limited','  npm run fulfillment:run'].join('\\n'))\"",
+    "help": "node -e \"console.log(['PARK MINISTRY COMMANDS','','MAIN','  npm run buying:live','  npm run buying:live:force-event-id','  npm run listing:reachpro','  npm run sales:track','','DEBUG','  npm run listing:reachpro:force-event-id','  npm run debug:way:checkout','  npm run debug:way:buy-pass','','NOTE','  Fulfillment moved to ../Park Ministry Live. Run it from Task Automations using park:fulfillment:* or from Park Ministry Live directly.','','Examples','  npm run buying:live:force-event-id','  LISTING_FORCE_EVENT_IDS=160123456 npm run buying:live:force-event-id','  LISTING_ALLOW_SMARTSUITE_EVENT_ID_ONLY_FALLBACK=1 npm run listing:reachpro:force-event-id'].join('\\n'))\"",
     "start": "node Workspace/index.js",
     "buying:live": "BUYING_SOURCE=smartsuite node \"Bot - Buying/src/buyingBot/runBuyingBotLive.js\"",
     "buying:live:force-event-id": "LISTING_ALLOW_SMARTSUITE_EVENT_ID_ONLY_FALLBACK=1 BUYING_SOURCE=smartsuite node \"Bot - Buying/src/buyingBot/runBuyingBotLive.js\"",
     "listing:reachpro": "node \"Bot - Listing/src/listingBot/runListingBot.js\"",
     "listing:reachpro:force-event-id": "LISTING_ALLOW_SMARTSUITE_EVENT_ID_ONLY_FALLBACK=1 node \"Bot - Listing/src/listingBot/runListingBot.js\"",
     "sales:track": "node \"Ops - Sales Tracking/src/salesTracking/runSalesTracking.js\"",
-    "fulfillment:run": "FULFILLMENT_AUTOMATION_APPLY=1 node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentAutomation.js\"",
-    "fulfillment:limited": "FULFILLMENT_AUTOMATION_APPLY=1 FULFILLMENT_AUTOMATION_LIMIT=${FULFILLMENT_AUTOMATION_LIMIT:-25} node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentAutomation.js\"",
-    "debug:fulfillment:preview": "node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentCandidatePreview.js\"",
-    "debug:fulfillment:validate-pdfs": "node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentPdfValidationPreview.js\"",
-    "debug:fulfillment:stubhub": "node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentIntegration.js\"",
     "debug:way:checkout": "node \"Bot - Buying/src/buyingBot/providers/way/runCheckout.js\"",
     "debug:way:buy-pass": "node \"Bot - Buying/src/buyingBot/providers/way/buyPass.js\""
   },
