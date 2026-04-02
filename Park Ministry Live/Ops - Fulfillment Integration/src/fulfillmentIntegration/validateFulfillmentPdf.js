@@ -500,10 +500,10 @@ async function extractPdfTextWithFallback(pdfPath) {
   try {
     ocr = await extractPdfTextWithOcr(pdfPath);
   } catch (error) {
-    if (isMissingExecutableError(error) && directText) {
+    if (isMissingExecutableError(error)) {
       return {
         ...direct,
-        source: "direct_text_no_ocr",
+        source: directText ? "direct_text_no_ocr" : "direct_text_ocr_unavailable",
       };
     }
 
