@@ -2,6 +2,10 @@ const { listSmartsuiteRecords } = require("../../../Shared/src/shared/smartsuite
 const { INVENTORY_SMARTSUITE } = require("../../../Shared/src/shared/smartsuite/config");
 const { getSharedFileUrl } = require("./smartsuiteFulfillmentSource");
 const { containsAutomationNote } = require("./fulfillmentAutomationNotes");
+const {
+  inferProviderKeyFromReservationUrl,
+  normalizeProviderKey,
+} = require("./providerDetection");
 
 function getConfiguredFieldId(envKey, fallback = "") {
   return String(process.env[envKey] || fallback || "").trim();
@@ -213,6 +217,10 @@ function buildFulfillmentFieldMap() {
       "SMARTSUITE_FULFILLMENT_RESERVATION_ID_FIELD_ID",
       INVENTORY_SMARTSUITE.fields.reservationId,
     ),
+    reservationUrl: getConfiguredFieldId(
+      "SMARTSUITE_FULFILLMENT_RESERVATION_URL_FIELD_ID",
+      INVENTORY_SMARTSUITE.fields.reservationUrl,
+    ),
     requestForSolution: getConfiguredFieldId(
       "SMARTSUITE_FULFILLMENT_REQUEST_FOR_SOLUTION_FIELD_ID",
       INVENTORY_SMARTSUITE.fields.requestForSolution,
@@ -287,7 +295,11 @@ function buildFulfillmentPrefilter(fieldMap = buildFulfillmentFieldMap()) {
 
 function normalizeFulfillmentCandidate(record, fieldMap = buildFulfillmentFieldMap()) {
   const pdfAttachment = extractAttachmentCandidate(getFieldValue(record, fieldMap.pdf));
-  const provider = toText(getFieldValue(record, fieldMap.provider));
+  const providerName = toText(getFieldValue(record, fieldMap.provider));
+  const reservationUrl = toText(getFieldValue(record, fieldMap.reservationUrl));
+  const providerKey = normalizeProviderKey(providerName);
+  const inferredProvider = inferProviderKeyFromReservationUrl(reservationUrl);
+  const effectiveProvider = providerKey !== "unknown" ? providerKey : inferredProvider;
 
   return {
     record_id: toText(record.record_id || record.id),
@@ -298,10 +310,15 @@ function normalizeFulfillmentCandidate(record, fieldMap = buildFulfillmentFieldM
     pdf_checker: toText(getFieldValue(record, fieldMap.pdfChecker)),
     reservation_id: toText(getFieldValue(record, fieldMap.reservationId)),
     request_for_solution: normalizeBooleanLike(getFieldValue(record, fieldMap.requestForSolution)),
-    provider,
+    provider: providerName,
+    provider_name: providerName,
+    provider_key: providerKey,
+    inferred_provider: inferredProvider,
+    effective_provider: effectiveProvider,
     invoice_id: toText(getFieldValue(record, fieldMap.invoiceId)),
     marketplace_sale_id: toText(getFieldValue(record, fieldMap.marketplaceSaleId)),
     external_order_number: toText(getFieldValue(record, fieldMap.externalOrderNumber)),
+    reservation_url: reservationUrl,
     request_comment_detail: toText(getFieldValue(record, fieldMap.requestCommentDetail)),
     resolution_override: toText(getFieldValue(record, fieldMap.resolutionOverride)),
     pdf_url: pdfAttachment?.url || "",

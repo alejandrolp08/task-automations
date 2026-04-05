@@ -11,15 +11,17 @@
     "debug": [
       "debug:fulfillment:preview",
       "debug:fulfillment:validate-pdfs",
+      "debug:fulfillment:diagnostics",
       "debug:fulfillment:stubhub"
     ]
   },
   "scripts": {
-    "help": "node -e \"console.log(['PARK MINISTRY LIVE COMMANDS','','MAIN','  npm run fulfillment:run','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run fulfillment:limited','','DEBUG','  npm run debug:fulfillment:preview','  npm run debug:fulfillment:validate-pdfs','  npm run debug:fulfillment:stubhub'].join('\\n'))\"",
+    "help": "node -e \"console.log(['PARK MINISTRY LIVE COMMANDS','','MAIN','  npm run fulfillment:run','  FULFILLMENT_AUTOMATION_LIMIT=25 npm run fulfillment:limited','','DEBUG','  npm run debug:fulfillment:preview','  npm run debug:fulfillment:validate-pdfs','  npm run debug:fulfillment:diagnostics','  npm run debug:fulfillment:stubhub'].join('\\n'))\"",
     "fulfillment:run": "FULFILLMENT_AUTOMATION_APPLY=1 node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentAutomation.js\"",
     "fulfillment:limited": "FULFILLMENT_AUTOMATION_APPLY=1 FULFILLMENT_AUTOMATION_LIMIT=${FULFILLMENT_AUTOMATION_LIMIT:-25} node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentAutomation.js\"",
     "debug:fulfillment:preview": "node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentCandidatePreview.js\"",
     "debug:fulfillment:validate-pdfs": "node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentPdfValidationPreview.js\"",
+    "debug:fulfillment:diagnostics": "node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentPdfDiagnostics.js\"",
     "debug:fulfillment:stubhub": "node \"Ops - Fulfillment Integration/src/fulfillmentIntegration/runFulfillmentIntegration.js\""
   }
 }

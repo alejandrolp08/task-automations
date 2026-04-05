@@ -188,25 +188,27 @@ async function findSmartsuiteRecord(input, config = buildSmartsuiteFulfillmentCo
     }
   }
 
-  const records = await listSmartsuiteRecords(config.tableId, { limit: 500 });
-
   const externalOrderNumber = String(input.externalOrderNumber || "").trim();
 
-  return (
-    records.find((record) => {
-      const candidateRecordId = asText(record.record_id || record.id);
-      if (recordId && candidateRecordId === recordId) {
-        return true;
-      }
+  if (externalOrderNumber && config.externalOrderFieldId) {
+    const matches = await listSmartsuiteRecords(config.tableId, {
+      limit: 100,
+      filter: {
+        operator: "and",
+        fields: [
+          {
+            field: config.externalOrderFieldId,
+            comparison: "is",
+            value: externalOrderNumber,
+          },
+        ],
+      },
+    });
 
-      if (externalOrderNumber && config.externalOrderFieldId) {
-        const externalOrderValue = asText(getFieldValue(record, config.externalOrderFieldId));
-        return externalOrderValue === externalOrderNumber;
-      }
+    return matches[0] || null;
+  }
 
-      return false;
-    }) || null
-  );
+  return null;
 }
 
 async function downloadAttachment(url, targetPath) {

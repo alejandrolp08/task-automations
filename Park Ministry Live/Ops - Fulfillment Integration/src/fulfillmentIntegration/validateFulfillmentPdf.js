@@ -2,6 +2,7 @@ const path = require("path");
 
 const { execFile } = require("child_process");
 const { promisify } = require("util");
+const { resolveProviderProfile } = require("./providerDetection");
 
 const execFileAsync = promisify(execFile);
 const MIN_DIRECT_TEXT_LENGTH = 120;
@@ -394,73 +395,6 @@ function extractReservationIdsFromPdf(pdfText) {
   return Array.from(ids);
 }
 
-function detectPdfProviderProfile(pdfText) {
-  const normalized = normalizeText(pdfText);
-
-  if (
-    normalized.includes("premium parking") ||
-    (
-      normalized.includes("receipt at p") &&
-      normalized.includes("parking details") &&
-      normalized.includes("parking number") &&
-      normalized.includes("property name")
-    )
-  ) {
-    return {
-      key: "premium_parking",
-      allowMissingLocation: true,
-      requiresReservationIdForAutoPass: true,
-    };
-  }
-
-  const providerProfiles = [
-    {
-      key: "rightway_parking",
-      patterns: [
-        "rightway parking",
-        "rightwayparking com",
-        "holiday inn philadelphia airport parking",
-      ],
-    },
-    {
-      key: "fargo_airport",
-      patterns: ["fargo airport", "fargo airport parking"],
-    },
-    {
-      key: "fly_louisville",
-      patterns: ["fly louisville", "your qr code for parking reservation"],
-    },
-    {
-      key: "hersheypark",
-      patterns: ["hersheypark", "hershey park"],
-    },
-    {
-      key: "premium_parking",
-      patterns: ["premium parking"],
-    },
-    {
-      key: "sfa_airport",
-      patterns: ["sfa airport"],
-    },
-  ];
-
-  for (const profile of providerProfiles) {
-    if (profile.patterns.some((pattern) => normalized.includes(pattern))) {
-      return {
-        key: profile.key,
-        allowMissingLocation: true,
-        requiresReservationIdForAutoPass: true,
-      };
-    }
-  }
-
-  return {
-    key: "default",
-    allowMissingLocation: false,
-    requiresReservationIdForAutoPass: false,
-  };
-}
-
 function scoreValidation(checks, issues) {
   let score = 0;
 
@@ -535,10 +469,61 @@ async function extractPdfTextWithOcr(pdfPath) {
   return parsed;
 }
 
-async function extractPdfTextWithFallback(pdfPath) {
+async function extractPdfTextWithPortableOcr(pdfPath) {
+  const scriptPath = path.join(__dirname, "extractPdfTextOcrPortable.py");
+  const commandAttempts = process.platform === "win32"
+    ? [
+      { command: "python", args: [scriptPath, pdfPath] },
+      { command: "py", args: ["-3", scriptPath, pdfPath] },
+      { command: "python3", args: [scriptPath, pdfPath] },
+    ]
+    : [
+      { command: "python3", args: [scriptPath, pdfPath] },
+      { command: "python", args: [scriptPath, pdfPath] },
+    ];
+  let stdout = "";
+
+  try {
+    const result = await runFirstAvailableCommand(commandAttempts, {
+      maxBuffer: 20 * 1024 * 1024,
+    });
+    stdout = result.stdout;
+  } catch (error) {
+    if (isMissingExecutableError(error)) {
+      throw error;
+    }
+
+    stdout = String(error.stdout || "").trim();
+    if (!stdout) {
+      throw error;
+    }
+  }
+
+  const parsed = JSON.parse(stdout);
+
+  if (!parsed.ok) {
+    throw new Error(parsed.message || parsed.error || "Portable PDF OCR extraction failed.");
+  }
+
+  return parsed;
+}
+
+async function extractPdfTextWithFallback(pdfPath, options = {}) {
+  const ocrMode = String(
+    options.ocrMode || process.env.FULFILLMENT_PDF_OCR_MODE || "auto",
+  )
+    .trim()
+    .toLowerCase();
   const direct = await extractPdfText(pdfPath);
   const directText = normalizeWhitespace(direct?.text || "");
   const directIsLowQuality = isLikelyLowQualityPdfText(directText);
+
+  if (ocrMode === "direct") {
+    return {
+      ...direct,
+      source: "direct_text_forced",
+    };
+  }
 
   if (directText.length >= MIN_DIRECT_TEXT_LENGTH && !directIsLowQuality) {
     return {
@@ -547,33 +532,58 @@ async function extractPdfTextWithFallback(pdfPath) {
     };
   }
 
-  let ocr;
+  const ocrAttempts = [];
 
-  try {
-    ocr = await extractPdfTextWithOcr(pdfPath);
-  } catch (error) {
-    if (isMissingExecutableError(error)) {
-      return {
-        ...direct,
-        source: directText ? "direct_text_no_ocr" : "direct_text_ocr_unavailable",
-      };
-    }
-
-    throw error;
+  if (ocrMode === "auto" || ocrMode === "swift") {
+    ocrAttempts.push({
+      label: "ocr_vision",
+      run: () => extractPdfTextWithOcr(pdfPath),
+    });
   }
 
-  const ocrText = normalizeWhitespace(ocr?.text || "");
+  if (ocrMode === "auto" || ocrMode === "portable") {
+    ocrAttempts.push({
+      label: "ocr_portable",
+      run: () => extractPdfTextWithPortableOcr(pdfPath),
+    });
+  }
 
-  if (ocrText.length > directText.length || directIsLowQuality) {
-    return {
-      ...ocr,
-      source: "ocr_vision",
-    };
+  let lastMissingExecutableError = null;
+
+  for (const attempt of ocrAttempts) {
+    try {
+      const ocr = await attempt.run();
+      const ocrText = normalizeWhitespace(ocr?.text || "");
+
+      if (ocrText.length > directText.length || directIsLowQuality) {
+        return {
+          ...ocr,
+          source: attempt.label,
+        };
+      }
+    } catch (error) {
+      if (isMissingExecutableError(error)) {
+        lastMissingExecutableError = error;
+        continue;
+      }
+
+      if (/ocr_engine_unavailable|pdf_render_unavailable/i.test(String(error.message || ""))) {
+        lastMissingExecutableError = error;
+        continue;
+      }
+
+      throw error;
+    }
   }
 
   return {
     ...direct,
-    source: "direct_text",
+    source:
+      lastMissingExecutableError || directIsLowQuality
+        ? directText
+          ? "direct_text_no_portable_ocr"
+          : "direct_text_ocr_unavailable"
+        : "direct_text",
   };
 }
 
@@ -587,7 +597,7 @@ function validatePdfAgainstRecord(record, pdfTextPayload) {
   const dateTokens = buildDateTokens(eventDate);
   const locationSignals = buildLocationSignals(parkingLocation);
   const pdfReservationIds = extractReservationIdsFromPdf(pdfText);
-  const providerProfile = detectPdfProviderProfile(pdfText);
+  const providerProfile = resolveProviderProfile(record, pdfText);
 
   const matchedDateTokens = dateTokens.filter((token) =>
     normalizedPdfText.includes(normalizeText(token)),
@@ -655,7 +665,9 @@ function validatePdfAgainstRecord(record, pdfTextPayload) {
     },
     provider_profile: {
       key: providerProfile.key,
+      source: providerProfile.source,
       allow_missing_location: providerProfile.allowMissingLocation,
+      requires_reservation_id_for_auto_pass: providerProfile.requiresReservationIdForAutoPass,
     },
   };
   const score = scoreValidation(checks, normalizedIssues);
@@ -666,7 +678,7 @@ function validatePdfAgainstRecord(record, pdfTextPayload) {
   if (providerLocationException) {
     const hasExpectedReservationId = Boolean(reservationId);
     const canAutoPass =
-      providerProfile.key === "rightway_parking"
+      providerProfile.key === "rightwayparking"
         ? true
         : hasExpectedReservationId && reservationIdMatched;
 
