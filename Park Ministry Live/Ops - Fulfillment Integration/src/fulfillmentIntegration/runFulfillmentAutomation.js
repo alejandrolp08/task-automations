@@ -323,7 +323,9 @@ async function runFulfillmentAutomation() {
     const candidateIndex = new Map(
       scopedEligibleRecords.map((record) => [record.record_id, record]),
     );
-    const validationResult = await runFulfillmentPdfValidationPreview();
+    const validationResult = await runFulfillmentPdfValidationPreview({
+      candidates,
+    });
     const groups = buildSaleValidationIndex(validationResult, candidateIndex);
     const actions = [];
 

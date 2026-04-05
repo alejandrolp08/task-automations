@@ -1,5 +1,8 @@
 function normalizeFulfillmentRecord(record) {
   const raw = record || {};
+  const marketplace = raw.marketplace == null ? "StubHub" : String(raw.marketplace).trim();
+  const normalizedMarketplace = marketplace.toLowerCase();
+  const fallbackProvider = normalizedMarketplace.includes("stubhub") ? "stubhub" : "";
   const pdfEntries = Array.isArray(raw.pdfEntries)
     ? raw.pdfEntries.map((entry) => ({
         pdfPath: entry?.pdfPath == null ? "" : String(entry.pdfPath).trim(),
@@ -18,12 +21,12 @@ function normalizeFulfillmentRecord(record) {
       : [raw.ticketId];
 
   return {
-    provider: String(raw.provider || "").trim().toLowerCase(),
+    provider: String(raw.provider || fallbackProvider).trim().toLowerCase(),
     saleId: raw.saleId == null ? "" : String(raw.saleId).trim(),
     invoiceId: raw.invoiceId == null ? "" : String(raw.invoiceId).trim(),
     marketplaceSaleId:
       raw.marketplaceSaleId == null ? "" : String(raw.marketplaceSaleId).trim(),
-    marketplace: raw.marketplace == null ? "StubHub" : String(raw.marketplace).trim(),
+    marketplace,
     smartsuiteRecordId:
       raw.smartsuiteRecordId == null ? "" : String(raw.smartsuiteRecordId).trim(),
     useSmartsuiteSource:

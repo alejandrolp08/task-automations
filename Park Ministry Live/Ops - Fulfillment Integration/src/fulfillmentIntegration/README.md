@@ -15,7 +15,9 @@ Current workflow
 2. Apply a conservative SmartSuite prefilter first.
 3. Normalize and apply the stricter local eligibility rules.
 4. Download the PDF from SmartSuite shared-file handles.
-5. Extract PDF text with `pypdf`, then fallback OCR with Vision when needed.
+5. Extract PDF text with `pypdf`, then fallback OCR:
+   - `swift` Vision on macOS when available
+   - portable OCR on Windows / Ubuntu when available
 6. Validate:
    - event date
    - parking location / address
@@ -94,9 +96,27 @@ These may pass without strict location matching if date and reservation id logic
 - `Fargo Airport`
 - `Fly Louisville`
 - `HersheyPark`
+- `Parkobility`
 - `Premium Parking`
 - `Rightway Parking`
 - `SFA Airport`
+- `BestParking`
+- `ClicknPark`
+- `GRS`
+
+Provider detection order
+
+- SmartSuite `Provider Name` when mapped
+- SmartSuite `reservation_url` domain inference
+- PDF text inference
+
+Current portable OCR direction
+
+- `extractPdfTextOcrPortable.py`
+  - renders the PDF to images using `pdftoppm` / `pdftocairo`
+  - prefers `PaddleOCR` when installed
+  - falls back to `pytesseract` when installed
+  - degrades safely back to direct-text mode if no portable OCR backend exists
 
 StubHub integration status
 
@@ -172,16 +192,28 @@ Key files
   - embedded text extraction
 - `extractPdfTextOcr.swift`
   - OCR fallback
+- `extractPdfTextOcrPortable.py`
+  - cross-platform OCR fallback
+- `runFulfillmentPdfDiagnostics.js`
+  - compare OCR modes over specific sale IDs without sending PDFs
 
 CLI usage
 
 Validation preview:
 
 - `npm run fulfillment:validate-pdfs`
+- `FULFILLMENT_PREVIEW_SALE_IDS=639521159,639550882 npm run debug:fulfillment:validate-pdfs`
 
 Candidate preview:
 
 - `npm run fulfillment:candidates`
+
+Diagnostics:
+
+- `FULFILLMENT_DIAGNOSTIC_SALE_IDS=639521159,639550882 npm run debug:fulfillment:diagnostics`
+- optional:
+  - `FULFILLMENT_DIAGNOSTIC_OCR_MODES=auto,swift,portable,direct`
+  - `FULFILLMENT_PDF_OCR_MODE=portable`
 
 Full automation dry-run:
 

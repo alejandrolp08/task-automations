@@ -77,6 +77,17 @@ function getValidationContext() {
   };
 }
 
+function parseSaleIds(rawValue) {
+  return Array.from(
+    new Set(
+      String(rawValue || "")
+        .split(/[\s,]+/)
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
 async function getStubhubSalePrecheck(marketplaceSaleId, context) {
   if (!context.includeStubhubPrecheck) {
     return null;
@@ -242,12 +253,29 @@ async function buildSaleGroups(validations, context) {
   return groups.sort((a, b) => String(a.group_key).localeCompare(String(b.group_key)));
 }
 
-async function runFulfillmentPdfValidationPreview() {
-  const limit = Math.max(1, Number(process.env.FULFILLMENT_PREVIEW_LIMIT || 5));
-  const offset = Math.max(0, Number(process.env.FULFILLMENT_PREVIEW_OFFSET || 0));
+async function runFulfillmentPdfValidationPreview(options = {}) {
+  const limit = Math.max(
+    1,
+    Number(options.limit ?? process.env.FULFILLMENT_PREVIEW_LIMIT ?? 5),
+  );
+  const offset = Math.max(
+    0,
+    Number(options.offset ?? process.env.FULFILLMENT_PREVIEW_OFFSET ?? 0),
+  );
   const context = getValidationContext();
-  const candidates = await fetchFulfillmentCandidates();
-  const previewCandidates = candidates.eligible_records.slice(offset, offset + limit);
+  const candidates = options.candidates || await fetchFulfillmentCandidates();
+  const sourceRecords = Array.isArray(options.records)
+    ? options.records
+    : options.includeNonEligible
+      ? candidates.deduped_records
+      : candidates.eligible_records;
+  const saleIds = new Set(
+    parseSaleIds(options.saleIds || process.env.FULFILLMENT_PREVIEW_SALE_IDS),
+  );
+  const scopedEligibleRecords = saleIds.size > 0
+    ? sourceRecords.filter((candidate) => saleIds.has(candidate.marketplace_sale_id))
+    : sourceRecords;
+  const previewCandidates = scopedEligibleRecords.slice(offset, offset + limit);
   const downloadsDir = path.join(PATHS.outputs, "downloads");
   const validations = [];
 
@@ -255,14 +283,19 @@ async function runFulfillmentPdfValidationPreview() {
     const pdfVerification = await verifyFulfillmentCandidatePdf(candidate);
 
     if (!pdfVerification.verified || !pdfVerification.shared_file_url) {
-    validations.push({
-      stubhub_sale: candidate.marketplace_sale_id,
-      record_id: candidate.record_id,
-      event_date: candidate.event_date,
-      parking_location: candidate.full_event_info,
-      reservation_id: candidate.reservation_id,
-      pdf_name: candidate.pdf_name,
-      verification: pdfVerification,
+      validations.push({
+        stubhub_sale: candidate.marketplace_sale_id,
+        record_id: candidate.record_id,
+        event_date: candidate.event_date,
+        parking_location: candidate.full_event_info,
+        reservation_id: candidate.reservation_id,
+        reservation_url: candidate.reservation_url,
+        provider: candidate.provider,
+        provider_name: candidate.provider_name,
+        inferred_provider: candidate.inferred_provider,
+        effective_provider: candidate.effective_provider,
+        pdf_name: candidate.pdf_name,
+        verification: pdfVerification,
         validation: {
           ok: false,
           status: "review",
@@ -278,7 +311,9 @@ async function runFulfillmentPdfValidationPreview() {
       `${candidate.marketplace_sale_id || candidate.record_id || "candidate"}.pdf`;
     const targetPath = path.join(downloadsDir, safeFileName.replace(/[^\w.-]+/g, "_"));
     await downloadFile(pdfVerification.shared_file_url, targetPath);
-    const pdfText = await extractPdfTextWithFallback(targetPath);
+    const pdfText = await extractPdfTextWithFallback(targetPath, {
+      ocrMode: options.ocrMode,
+    });
     const validation = validatePdfAgainstRecord(candidate, pdfText);
 
     validations.push({
@@ -287,6 +322,11 @@ async function runFulfillmentPdfValidationPreview() {
       event_date: candidate.event_date,
       parking_location: candidate.full_event_info,
       reservation_id: candidate.reservation_id,
+      reservation_url: candidate.reservation_url,
+      provider: candidate.provider,
+      provider_name: candidate.provider_name,
+      inferred_provider: candidate.inferred_provider,
+      effective_provider: candidate.effective_provider,
       pdf_name: candidate.pdf_name,
       file_path: targetPath,
       extraction_source: pdfText.source || "direct_text",
@@ -302,8 +342,12 @@ async function runFulfillmentPdfValidationPreview() {
     recorded_at: new Date().toISOString(),
     start_date: candidates.start_date,
     preview_offset: offset,
+    ocr_mode: String(options.ocrMode || process.env.FULFILLMENT_PDF_OCR_MODE || "auto"),
+    requested_sale_ids: Array.from(saleIds),
     summary: {
       total_eligible_records: candidates.eligible_records.length,
+      source_records: sourceRecords.length,
+      scoped_eligible_records: scopedEligibleRecords.length,
       validated_records: validations.length,
       passed: validations.filter((item) => item.validation?.ok).length,
       review: validations.filter((item) =>
@@ -327,7 +371,9 @@ async function runFulfillmentPdfValidationPreview() {
     sale_groups,
   };
 
-  result.output_file = await writeValidationResult(result);
+  if (!options.skipWrite) {
+    result.output_file = await writeValidationResult(result);
+  }
   return result;
 }
 
